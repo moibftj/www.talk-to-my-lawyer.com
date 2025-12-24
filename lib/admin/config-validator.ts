@@ -1,13 +1,12 @@
 /**
  * Admin Configuration Validator
  *
- * Validates all required admin environment variables on application startup.
- * This ensures admin authentication is properly configured.
+ * Validates required admin environment variables on application startup.
+ * Supports multiple admin mode - only ADMIN_PORTAL_KEY is required.
+ * Admin users are managed in the database with role='admin'.
  */
 
 interface AdminConfig {
-  adminEmail?: string
-  adminPassword?: string
   adminPortalKey?: string
   isValid: boolean
   errors: string[]
@@ -17,6 +16,7 @@ interface AdminConfig {
 /**
  * Validate admin environment variables
  * Returns validation result with any errors or warnings
+ * Multi-admin mode: Only ADMIN_PORTAL_KEY is required
  */
 export function validateAdminConfig(): AdminConfig {
   const config: AdminConfig = {
@@ -25,30 +25,7 @@ export function validateAdminConfig(): AdminConfig {
     warnings: []
   }
 
-  // Check admin email
-  const adminEmail = process.env.ADMIN_EMAIL
-  if (!adminEmail) {
-    config.isValid = false
-    config.errors.push('ADMIN_EMAIL environment variable is required')
-  } else if (!adminEmail.includes('@')) {
-    config.isValid = false
-    config.errors.push('ADMIN_EMAIL must be a valid email address')
-  } else {
-    config.adminEmail = adminEmail
-  }
-
-  // Check admin password
-  const adminPassword = process.env.ADMIN_PASSWORD
-  if (!adminPassword) {
-    config.isValid = false
-    config.errors.push('ADMIN_PASSWORD environment variable is required')
-  } else if (adminPassword.length < 8) {
-    config.warnings.push('ADMIN_PASSWORD should be at least 8 characters long')
-  } else {
-    config.adminPassword = adminPassword
-  }
-
-  // Check admin portal key
+  // Check admin portal key (required for security)
   const adminPortalKey = process.env.ADMIN_PORTAL_KEY
   if (!adminPortalKey) {
     config.isValid = false
@@ -59,15 +36,21 @@ export function validateAdminConfig(): AdminConfig {
     config.adminPortalKey = adminPortalKey
   }
 
+  // Optional: Check if legacy admin credentials are set (for backward compatibility)
+  const adminEmail = process.env.ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_PASSWORD
+
+  if (adminEmail || adminPassword) {
+    if (!adminEmail || !adminPassword) {
+      config.warnings.push('ADMIN_EMAIL and ADMIN_PASSWORD are deprecated. Admin users should be created in the database with role="admin"')
+    } else {
+      config.warnings.push('ADMIN_EMAIL and ADMIN_PASSWORD are deprecated but still set. Consider removing them and using database-managed admin users')
+    }
+  }
+
   // Additional security checks
   const nodeEnv = process.env.NODE_ENV
   if (nodeEnv === 'production') {
-    // Check for common/default passwords in production
-    if (adminPassword && ['admin', 'password', '123456'].includes(adminPassword.toLowerCase())) {
-      config.isValid = false
-      config.errors.push('Using default or weak passwords in production is not allowed')
-    }
-
     // Check for default portal keys
     if (adminPortalKey && ['admin', 'portal', 'key', 'default'].includes(adminPortalKey.toLowerCase())) {
       config.isValid = false
@@ -127,10 +110,9 @@ export function getAdminConfigStatus() {
   const config = validateAdminConfig()
   return {
     configured: config.isValid,
-    emailSet: !!process.env.ADMIN_EMAIL,
-    passwordSet: !!process.env.ADMIN_PASSWORD,
     portalKeySet: !!process.env.ADMIN_PORTAL_KEY,
     errorCount: config.errors.length,
-    warningCount: config.warnings.length
+    warningCount: config.warnings.length,
+    multiAdminMode: true
   }
 }

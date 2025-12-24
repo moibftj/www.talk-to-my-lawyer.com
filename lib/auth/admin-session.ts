@@ -110,43 +110,45 @@ export async function destroyAdminSession(): Promise<void> {
 
 /**
  * Verify admin credentials and portal key
+ * Supports multiple admins - each admin has their own Supabase Auth account
  */
 export async function verifyAdminCredentials(
   email: string,
   password: string,
   portalKey: string
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
-  // Verify portal key
+  // Verify portal key (security layer - prevents unauthorized access even with valid credentials)
   const expectedPortalKey = process.env.ADMIN_PORTAL_KEY
   if (!expectedPortalKey || portalKey !== expectedPortalKey) {
     return { success: false, error: 'Invalid admin portal key' }
   }
 
-  // Verify credentials
-  const expectedEmail = process.env.ADMIN_EMAIL
-  const expectedPassword = process.env.ADMIN_PASSWORD
-
-  if (!expectedEmail || !expectedPassword) {
-    console.error('[AdminAuth] Admin credentials not configured')
-    return { success: false, error: 'Admin authentication not configured' }
-  }
-
-  if (email !== expectedEmail || password !== expectedPassword) {
-    return { success: false, error: 'Invalid admin credentials' }
-  }
-
-  // Get admin user ID from database
+  // Authenticate with Supabase Auth (supports multiple users)
   const supabase = await createClient()
-  const { data: profile, error } = await supabase
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+
+  if (authError || !authData.user) {
+    console.warn('[AdminAuth] Supabase auth failed:', authError?.message)
+    return { success: false, error: 'Invalid email or password' }
+  }
+
+  // Verify user has admin role in profiles table
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role')
-    .eq('email', email)
+    .select('id, role, full_name')
+    .eq('id', authData.user.id)
     .eq('role', 'admin')
     .single()
 
-  if (error || !profile) {
-    console.error('[AdminAuth] Admin profile not found:', error)
-    return { success: false, error: 'Admin account not found' }
+  if (profileError || !profile) {
+    console.warn('[AdminAuth] User does not have admin role:', {
+      userId: authData.user.id,
+      email
+    })
+    return { success: false, error: 'Access denied. Admin privileges required.' }
   }
 
   return { success: true, userId: profile.id }
