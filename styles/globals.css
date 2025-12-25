@@ -199,6 +199,91 @@
   animation: pulse-scale 2s ease-in-out infinite;
 }
 
+@keyframes aurora-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cta-spectrum {
+  0% {
+    opacity: 0.25;
+    transform: translate3d(-5%, -5%, 0) scale(0.96);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translate3d(3%, 3%, 0) scale(1.02);
+  }
+  100% {
+    opacity: 0.25;
+    transform: translate3d(-5%, -5%, 0) scale(0.96);
+  }
+}
+
+@keyframes cta-breath {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+.aurora-orbit {
+  width: min(90vw, 960px);
+  height: min(90vw, 960px);
+  border-radius: 9999px;
+  background: conic-gradient(from 120deg, #0ea5e9, #8b5cf6, #f97316, #22c55e, #0ea5e9);
+  filter: blur(42px);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.38) 30%, transparent 65%);
+}
+
+.aurora-orbit--inner {
+  width: min(78vw, 780px);
+  height: min(78vw, 780px);
+  background: conic-gradient(from 210deg, #22c55e, #06b6d4, #6366f1, #22c55e);
+  filter: blur(34px);
+  opacity: 0.35;
+}
+
+.cta-aurora {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.cta-aurora::before,
+.cta-aurora::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  border-radius: 24px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cta-aurora::before {
+  background: conic-gradient(from 45deg, rgba(14, 165, 233, 0.25), rgba(99, 102, 241, 0.18), rgba(16, 185, 129, 0.18), rgba(234, 88, 12, 0.18), rgba(14, 165, 233, 0.25));
+  animation: aurora-rotate 24s linear infinite;
+}
+
+.cta-aurora::after {
+  background: radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.18), transparent 45%),
+    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.14), transparent 55%),
+    radial-gradient(circle at 65% 30%, rgba(234, 88, 12, 0.16), transparent 55%);
+  animation: cta-spectrum 10s ease-in-out infinite;
+}
+
+.cta-aurora > * {
+  position: relative;
+  z-index: 1;
+  animation: cta-breath 4s ease-in-out infinite;
+}
+
 .animate-bounce-gentle {
   animation: bounce-gentle 2s ease-in-out infinite;
 }

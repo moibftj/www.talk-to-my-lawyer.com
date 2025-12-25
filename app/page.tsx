@@ -55,6 +55,23 @@ type Profile = {
   email: string
 }
 
+const InclusiveOrbit = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden>
+    <motion.div
+      className="aurora-orbit"
+      initial={{ rotate: -18, opacity: 0.35 }}
+      animate={{ rotate: 342, opacity: [0.35, 0.55, 0.35] }}
+      transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
+    />
+    <motion.div
+      className="aurora-orbit aurora-orbit--inner"
+      initial={{ rotate: 12, opacity: 0.4 }}
+      animate={{ rotate: -348, opacity: [0.4, 0.6, 0.4] }}
+      transition={{ duration: 20, repeat: Infinity, ease: 'linear', delay: 1.2 }}
+    />
+  </div>
+)
+
 export default function HomePage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
@@ -198,7 +215,7 @@ export default function HomePage() {
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button variant="running_border" size="sm" className="glow-enhanced">
+                  <Button variant="running_border" size="sm" className="glow-enhanced cta-aurora">
                     <motion.span
                       className="flex items-center"
                       whileHover={{ x: 3 }}
@@ -262,6 +279,8 @@ export default function HomePage() {
             <div className="absolute top-40 right-20 w-40 h-40 bg-blue-500/5 rounded-full blur-xl" />
             <div className="absolute bottom-20 left-1/4 w-36 h-36 bg-blue-400/5 rounded-full blur-xl" />
           </div>
+
+          <InclusiveOrbit />
 
           {/* Grid pattern overlay */}
           <div className="absolute inset-0 opacity-30">
@@ -384,7 +403,7 @@ export default function HomePage() {
                 }}
               >
                 <Link href="/auth/signup">
-                  <Button variant="running_border" className="px-12 py-5 text-lg font-semibold rounded-xl glow-enhanced gpu-accelerated">
+                  <Button variant="running_border" className="px-12 py-5 text-lg font-semibold rounded-xl glow-enhanced gpu-accelerated cta-aurora">
                     <motion.div
                       className="flex items-center"
                       whileHover={{ x: 5 }}
@@ -417,7 +436,7 @@ export default function HomePage() {
                 <Button
                   variant="outline"
                   onClick={() => scrollToSection('letter-types')}
-                  className="px-12 py-5 text-lg font-semibold rounded-xl border-2 border-[#199df4]/30 text-[#199df4] bg-white/80 backdrop-blur-sm hover:bg-sky-50 hover:border-[#199df4]/50 hover:shadow-xl transition-all duration-300 group ripple magnetic-btn"
+                  className="px-12 py-5 text-lg font-semibold rounded-xl border-2 border-[#199df4]/30 text-[#199df4] bg-white/80 backdrop-blur-sm hover:bg-sky-50 hover:border-[#199df4]/50 hover:shadow-xl transition-all duration-300 group ripple magnetic-btn cta-aurora"
                 >
                   <motion.div
                     className="flex items-center"
@@ -701,7 +720,7 @@ export default function HomePage() {
                         <Button
                           variant="running_border"
                           size="lg"
-                          className="w-full ripple"
+                          className="w-full ripple cta-aurora"
                         >
                           <motion.span
                             className="flex items-center justify-center"
