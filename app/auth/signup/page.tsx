@@ -177,6 +177,7 @@ export default function SignUpPage() {
                 placeholder="John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                autoComplete="name"
                 required
                 disabled={loading}
               />
@@ -189,6 +190,7 @@ export default function SignUpPage() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
                 disabled={loading}
               />
