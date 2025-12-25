@@ -52,19 +52,26 @@ function createLetterSchema(additionalFields: Record<string, any> = {}): LetterI
 
 // Define letter type schemas with variations from base
 export const LETTER_TYPE_SCHEMAS: Record<string, LetterIntakeSchema> = {
-  'Demand Letter': createLetterSchema({
+  'demand_letter': createLetterSchema({
     amountDemanded: { type: 'number', required: false, min: 0, max: 10000000 },
     deadlineDate: { type: 'string', required: false, maxLength: 50 },
     incidentDate: { type: 'string', required: false, maxLength: 50 },
   }),
-  'Cease and Desist': createLetterSchema({
+  'cease_desist': createLetterSchema({
     deadlineDate: { type: 'string', required: false, maxLength: 50 },
   }),
-  'Legal Notice': createLetterSchema({
+  'contract_breach': createLetterSchema({
     incidentDate: { type: 'string', required: false, maxLength: 50 },
   }),
-  'Warning Letter': createLetterSchema(),
-  'Follow-up Letter': createLetterSchema()
+  'eviction_notice': createLetterSchema({
+    deadlineDate: { type: 'string', required: false, maxLength: 50 },
+  }),
+  'employment_dispute': createLetterSchema({
+    incidentDate: { type: 'string', required: false, maxLength: 50 },
+  }),
+  'consumer_complaint': createLetterSchema({
+    incidentDate: { type: 'string', required: false, maxLength: 50 },
+  })
 }
 
 // List of allowed letter types
