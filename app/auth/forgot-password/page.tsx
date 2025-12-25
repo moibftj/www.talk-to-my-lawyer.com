@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react'
+import { DEFAULT_LOGO_ALT, DEFAULT_LOGO_SRC } from '@/lib/constants'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -48,6 +50,16 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src={DEFAULT_LOGO_SRC}
+              alt={DEFAULT_LOGO_ALT}
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-full logo-badge"
+              priority
+            />
+          </div>
           <div className="flex items-center gap-2 mb-4">
             <Link href="/auth/login" className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-4 w-4" />
