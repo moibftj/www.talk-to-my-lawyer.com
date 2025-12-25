@@ -103,6 +103,7 @@ export default function ResetPasswordPage() {
                       placeholder="Enter new password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      autoComplete="new-password"
                       required
                       minLength={6}
                     />
@@ -119,6 +120,7 @@ export default function ResetPasswordPage() {
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
                       required
                       minLength={6}
                     />
