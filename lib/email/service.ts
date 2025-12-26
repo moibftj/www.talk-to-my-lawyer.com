@@ -6,11 +6,8 @@ import type {
   EmailTemplate,
   TemplateData,
 } from './types'
-import { BrevoProvider } from './providers/brevo'
-import { SMTPProvider, createSMTPProvider } from './providers/smtp'
 import { ConsoleProvider } from './providers/console'
 import { ResendProvider } from './providers/resend'
-import { SendGridProvider } from './providers/sendgrid'
 import { renderTemplate } from './templates'
 
 class EmailService {
@@ -20,35 +17,10 @@ class EmailService {
   private fromName: string
 
   constructor() {
-    // Initialize Resend provider (primary)
+    // Initialize Resend provider (primary and only provider)
     this.providers.set('resend', new ResendProvider())
 
-    // Initialize Brevo API provider
-    this.providers.set('brevo', new BrevoProvider())
-
-    // Initialize SendGrid provider
-    this.providers.set('sendgrid', new SendGridProvider())
-
-    // Initialize SMTP provider from environment variables
-    try {
-      const smtpHost = process.env.SMTP_HOST
-      const smtpPort = process.env.SMTP_PORT
-      const smtpUser = process.env.SMTP_USER
-      const smtpPass = process.env.SMTP_PASS
-
-      if (smtpHost && smtpPort && smtpUser && smtpPass) {
-        const smtpProvider = createSMTPProvider({
-          host: smtpHost,
-          port: smtpPort,
-          user: smtpUser,
-          pass: smtpPass
-        })
-        this.providers.set('smtp', smtpProvider)
-      }
-    } catch (error) {
-      console.warn('[EmailService] Failed to initialize SMTP provider:', error)
-    }
-
+    // Console provider for development/fallback only
     this.providers.set('console', new ConsoleProvider())
 
     this.fromEmail = process.env.EMAIL_FROM || 'noreply@talk-to-my-lawyer.com'
@@ -57,23 +29,10 @@ class EmailService {
   }
 
   private determineDefaultProvider(): EmailProvider {
-    const configuredProvider = process.env.EMAIL_PROVIDER as EmailProvider | undefined
-
-    if (configuredProvider && this.providers.has(configuredProvider)) {
-      const provider = this.providers.get(configuredProvider)!
-      if (provider.isConfigured()) {
-        return configuredProvider
-      }
-    }
-
-    // Check provider priority order - Resend first, then Brevo, SendGrid, SMTP, console
-    const providerPriority: EmailProvider[] = ['resend', 'brevo', 'sendgrid', 'smtp']
-
-    for (const providerName of providerPriority) {
-      const provider = this.providers.get(providerName)
-      if (provider && provider.isConfigured()) {
-        return providerName
-      }
+    // Use Resend if configured
+    const resendProvider = this.providers.get('resend')
+    if (resendProvider && resendProvider.isConfigured()) {
+      return 'resend'
     }
 
     if (process.env.NODE_ENV === 'development') {
@@ -81,7 +40,7 @@ class EmailService {
       return 'console'
     }
 
-    console.warn('[EmailService] No email provider configured, using console fallback')
+    console.warn('[EmailService] Resend not configured, using console fallback')
     return 'console'
   }
 

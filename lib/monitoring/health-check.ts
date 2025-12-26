@@ -202,10 +202,7 @@ export class HealthChecker {
       // Check email configuration
       const emailProvider = process.env.EMAIL_PROVIDER
       const hasConfig = {
-        sendgrid: !!process.env.SENDGRID_API_KEY,
-        resend: !!process.env.RESEND_API_KEY,
-        brevo: !!process.env.BREVO_API_KEY,
-        smtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+        resend: !!process.env.RESEND_API_KEY
       }
 
       const isConfigured = emailProvider && hasConfig[emailProvider as keyof typeof hasConfig]

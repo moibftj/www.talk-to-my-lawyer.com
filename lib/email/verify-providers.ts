@@ -79,7 +79,7 @@ async function testProvider(providerName: string): Promise<TestResult> {
 export async function verifyEmailProviders(): Promise<TestResult[]> {
   console.log('🔍 Verifying Email Provider Configuration...\n')
 
-  const providers = ['sendgrid', 'brevo', 'resend', 'smtp', 'console']
+  const providers = ['resend', 'console']
   const results: TestResult[] = []
 
   for (const provider of providers) {

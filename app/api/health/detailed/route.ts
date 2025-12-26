@@ -64,11 +64,7 @@ async function checkEmail(): Promise<ServiceStatus> {
   const start = Date.now()
   try {
     // Check if email service is configured
-    const hasEmailConfig =
-      !!process.env.SENDGRID_API_KEY ||
-      !!process.env.BREVO_API_KEY ||
-      !!process.env.RESEND_API_KEY ||
-      !!process.env.SMTP_HOST
+    const hasEmailConfig = !!process.env.RESEND_API_KEY
 
     const responseTime = Date.now() - start
 
