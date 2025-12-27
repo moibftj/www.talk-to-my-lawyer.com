@@ -8,15 +8,19 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Read database URL from environment or use direct value
-const DATABASE_URL = process.env.DATABASE_URL || 
-  'postgresql://postgres:fIYe2RoUEKxTsxff@db.nomiiqzxaxyxnxndvkbe.supabase.co:5432/postgres';
+// Read database URL from environment
+const DATABASE_URL = process.env.DATABASE_URL;
 
 // Migration file to run
 const migrationFile = process.argv[2] || 'scripts/023_fix_employee_coupons.sql';
 
 async function runMigration() {
   try {
+    if (!DATABASE_URL) {
+      console.error('❌ DATABASE_URL is not set in the environment.');
+      process.exit(1);
+    }
+
     const sqlPath = path.resolve(process.cwd(), migrationFile);
     
     if (!fs.existsSync(sqlPath)) {
