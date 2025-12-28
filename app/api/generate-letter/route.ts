@@ -67,9 +67,12 @@ export async function POST(request: NextRequest) {
     const { letterType, intakeData } = body
 
     // Comprehensive input validation and sanitization
+    console.log('[GenerateLetter] Received data:', { letterType, intakeData })
+
     const validation = validateLetterGenerationRequest(letterType, intakeData)
     if (!validation.valid) {
       console.error("[GenerateLetter] Validation failed:", validation.errors)
+      console.error("[GenerateLetter] Received intakeData:", JSON.stringify(intakeData, null, 2))
       return NextResponse.json(
         {
           error: "Invalid input data",

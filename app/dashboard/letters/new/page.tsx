@@ -200,7 +200,11 @@ export default function NewLetterPage() {
           router.push("/dashboard/subscription")
           return
         }
-        throw new Error(errorData.error || "Failed to generate letter")
+        // Show detailed validation errors if available
+        const errorMessage = errorData.details
+          ? `${errorData.error}: ${errorData.details.join(', ')}`
+          : errorData.error || "Failed to generate letter"
+        throw new Error(errorMessage)
       }
 
       const { letterId: newLetterId, aiDraft: draft, isFreeTrial: freeTrialFlag, status } = await response.json()
@@ -360,14 +364,23 @@ export default function NewLetterPage() {
               </div>
 
               <div>
-                <Label htmlFor="supportingDocuments">Supporting Documents (Optional)</Label>
+                <Label htmlFor="supportingDocuments" className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                  Supporting Documents (Optional)
+                </Label>
                 <Textarea
                   id="supportingDocuments"
                   rows={2}
                   placeholder="List any contracts, invoices, emails, or other documents that support your case"
                   value={formData.supportingDocuments}
                   onChange={(e) => setFormData({ ...formData, supportingDocuments: e.target.value })}
+                  className="mt-2"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  You can describe documents here or attach them after letter generation
+                </p>
               </div>
             </div>
 
