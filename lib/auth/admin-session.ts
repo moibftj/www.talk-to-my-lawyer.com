@@ -118,8 +118,23 @@ export async function verifyAdminCredentials(
   portalKey: string
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
   // Verify portal key (security layer - prevents unauthorized access even with valid credentials)
-  const expectedPortalKey = process.env.ADMIN_PORTAL_KEY
-  if (!expectedPortalKey || portalKey !== expectedPortalKey) {
+  const expectedPortalKey = process.env.ADMIN_PORTAL_KEY?.trim()
+
+  // Trim whitespace from input for more robust comparison
+  const trimmedPortalKey = portalKey.trim()
+
+  console.log('[AdminAuth] Portal key verification:', {
+    hasExpectedKey: !!expectedPortalKey,
+    expectedKeyLength: expectedPortalKey?.length || 0,
+    receivedKeyLength: trimmedPortalKey.length,
+    keysMatch: expectedPortalKey === trimmedPortalKey
+  })
+
+  if (!expectedPortalKey || trimmedPortalKey !== expectedPortalKey) {
+    console.warn('[AdminAuth] Portal key mismatch', {
+      expected: expectedPortalKey.substring(0, 10) + '...',
+      received: trimmedPortalKey.substring(0, 10) + '...'
+    })
     return { success: false, error: 'Invalid admin portal key' }
   }
 
