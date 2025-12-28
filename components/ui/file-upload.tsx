@@ -290,7 +290,7 @@ export function FileUpload({
                 )}
               >
                 {/* File icon or preview */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {file.preview ? (
                     <img 
                       src={file.preview} 
@@ -324,7 +324,7 @@ export function FileUpload({
                 </div>
 
                 {/* Status icon */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {file.status === "uploading" && (
                     <svg className="w-5 h-5 text-muted-foreground animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -350,7 +350,7 @@ export function FileUpload({
                     e.stopPropagation()
                     handleRemoveFile(file.id)
                   }}
-                  className="flex-shrink-0 p-1 rounded hover:bg-muted transition-colors"
+                  className="shrink-0 p-1 rounded hover:bg-muted transition-colors"
                   disabled={disabled}
                 >
                   <svg className="w-4 h-4 text-muted-foreground hover:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
