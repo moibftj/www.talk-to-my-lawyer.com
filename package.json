@@ -27,7 +27,9 @@
     ],
     "overrides": {
       "undici": ">=5.29.0",
-      "esbuild": ">=0.25.0"
+      "esbuild": ">=0.25.0",
+      "node-domexception": "npm:web-domexception@^2.0.0",
+      "path-match": "npm:path-to-regexp@^6.0.0"
     }
   },
   "dependencies": {
