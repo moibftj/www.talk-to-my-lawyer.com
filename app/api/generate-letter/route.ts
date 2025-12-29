@@ -5,6 +5,8 @@ import { generateText } from "ai"
 import { letterGenerationRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-redis'
 import { validateLetterGenerationRequest } from '@/lib/validation/letter-schema'
 import { generateTextWithRetry, checkOpenAIHealth } from '@/lib/ai/openai-retry'
+import { getAdminEmails } from '@/lib/admin/letter-actions'
+import { sendTemplateEmail } from '@/lib/email/service'
 
 export const runtime = "nodejs"
 
@@ -185,6 +187,20 @@ export async function POST(request: NextRequest) {
         p_new_status: 'pending_review',
         p_notes: 'Letter generated successfully by AI'
       })
+
+      // 9. Notify admins about new letter pending review
+      const adminEmails = await getAdminEmails()
+      if (adminEmails.length > 0) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        // Send notifications asynchronously - don't wait for it
+        sendTemplateEmail('admin-alert', adminEmails, {
+          alertMessage: `New letter "${newLetter.title}" requires review. Letter type: ${sanitizedLetterType}`,
+          actionUrl: `${siteUrl}/secure-admin-gateway/review/${newLetter.id}`,
+          pendingReviews: 1,
+        }).catch(error => {
+          console.error('[GenerateLetter] Failed to send admin notification:', error)
+        })
+      }
 
       return NextResponse.json(
         {

@@ -104,6 +104,20 @@ export async function updateLetterStatus(params: {
 }
 
 /**
+ * Get all admin email addresses from the database
+ */
+export async function getAdminEmails(): Promise<string[]> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('role', 'admin')
+
+  return data?.map((p: { email: string | null }) => p.email).filter(Boolean) as string[] || []
+}
+
+/**
  * Send notification email to letter owner
  */
 export async function notifyLetterOwner(params: {
