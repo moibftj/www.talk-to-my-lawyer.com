@@ -24,6 +24,19 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,6 +50,58 @@ jobs:
 
       - name: Security audit (high severity only)
         run: pnpm audit --audit-level=high
+
+      - name: Validate required secrets
+        run: |
+          echo "Checking that all required secrets are set..."
+          REQUIRED_SECRETS=(
+            "NEXT_PUBLIC_SUPABASE_URL"
+            "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+            "OPENAI_API_KEY"
+            "SUPABASE_SERVICE_ROLE_KEY"
+            "STRIPE_SECRET_KEY"
+            "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+            "ADMIN_EMAIL"
+            "ADMIN_PORTAL_KEY"
+            "CRON_SECRET"
+            "KV_REST_API_URL"
+            "KV_REST_API_TOKEN"
+            "RESEND_API_KEY"
+          )
+
+          MISSING_SECRETS=()
+          for secret in "${REQUIRED_SECRETS[@]}"; do
+            # Check if secret is set and not empty
+            if [ -z "${!secret}" ]; then
+              MISSING_SECRETS+=("$secret")
+            fi
+          done
+
+          if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
+            echo "❌ The following required secrets are missing or empty:"
+            printf '%s\n' "${MISSING_SECRETS[@]}"
+            echo ""
+            echo "Please add these secrets in GitHub Repository Settings:"
+            echo "Settings → Secrets and variables → Actions → New repository secret"
+            echo ""
+            echo "For setup help, run: pnpm run setup:github-secrets"
+            exit 1
+          fi
+
+          echo "✅ All required secrets are configured"
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PORTAL_KEY: ${{ secrets.ADMIN_PORTAL_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
       - name: Build project
         run: pnpm build
