@@ -28,6 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
@@ -58,8 +59,8 @@ jobs:
 
           MISSING_SECRETS=()
           for secret in "${REQUIRED_SECRETS[@]}"; do
-            # Check if secret is set and not empty
-            if [ -z "${!secret}" ]; then
+            # Use indirect expansion to check if variable is set and not empty
+            if [ -z "${!secret:-}" ]; then
               MISSING_SECRETS+=("$secret")
             fi
           done
