@@ -1,0 +1,44 @@
+# GitHub Repository Secrets Setup
+
+Add these secrets to your GitHub repository at Settings → Secrets and variables → Actions:
+
+## Required Secrets for CI
+
+```
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+OPENAI_API_KEY
+SUPABASE_SERVICE_ROLE_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ADMIN_EMAIL
+ADMIN_PORTAL_KEY
+CRON_SECRET
+KV_REST_API_URL
+KV_REST_API_TOKEN
+RESEND_API_KEY
+```
+
+## Optional Secrets
+
+```
+DATABASE_URL
+SUPABASE_HOSTNAME
+AI_GATEWAY_API_KEY
+SECURE_ADMIN_GATEWAY_KEY
+ADMIN_PASSWORD
+KV_REST_API_READ_ONLY_TOKEN
+REDIS_URL
+KV_URL
+```
+
+## App URLs
+
+```
+NEXT_PUBLIC_APP_URL
+NEXT_PUBLIC_SITE_URL
+NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
+```
+
+⚠️ **Security Note**: Never commit real API keys or secrets to your repository. Always use GitHub Secrets for sensitive data.

@@ -34,16 +34,53 @@ jobs:
 
       - name: Run linter
         run: pnpm lint
-        continue-on-error: true
 
       - name: Security audit (high severity only)
         run: pnpm audit --audit-level=high
 
       - name: Build project
         run: pnpm build
-        continue-on-error: true
+        env:
+          # Essential build-time variables
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://www.talk-to-my-lawyer.com' }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://www.talk-to-my-lawyer.com' }}
+          NEXT_PUBLIC_TEST_MODE: false
 
       - name: Check environment setup
-        run: |
-          cp .env.ci .env
-          pnpm run validate-env
+        run: pnpm run validate-env
+        env:
+          # Core Application
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+          # AI & OpenAI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+          # Stripe Payment
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+          # Admin Configuration
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PORTAL_KEY: ${{ secrets.ADMIN_PORTAL_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+          # Redis/Upstash
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+
+          # Email Service
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+          # App URLs
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://www.talk-to-my-lawyer.com' }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://www.talk-to-my-lawyer.com' }}
+
+          # Mode Configuration
+          ENABLE_TEST_MODE: false
+          NEXT_PUBLIC_TEST_MODE: false
