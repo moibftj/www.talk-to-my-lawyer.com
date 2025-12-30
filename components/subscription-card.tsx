@@ -140,8 +140,8 @@ export function SubscriptionCard() {
       // For free subscriptions (100% discount), redirect to success page
       router.push('/dashboard/subscription?success=true')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Failed to create subscription')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create subscription')
     } finally {
       setLoading(false)
     }

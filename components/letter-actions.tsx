@@ -47,9 +47,9 @@ export function LetterActions({ letter }: { letter: Letter }) {
 
       router.push('/dashboard/letters');
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[LetterActions] Delete error:', err);
-      alert(err.message || 'Failed to delete letter');
+      alert(err instanceof Error ? err.message : 'Failed to delete letter');
     } finally {
       setDeleting(false);
     }
