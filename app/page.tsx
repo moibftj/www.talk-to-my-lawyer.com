@@ -458,26 +458,27 @@ export default function HomePage() {
                   },
                 }}
               >
-                <Button
-                  variant="outline"
-                  onClick={() => scrollToSection('faqs')}
-                  className="px-12 py-5 text-lg font-semibold rounded-xl border-2 border-[#199df4]/30 text-[#199df4] bg-white/80 backdrop-blur-sm hover:bg-sky-50 hover:border-[#199df4]/50 hover:shadow-xl transition-all duration-300 group ripple magnetic-btn cta-aurora"
-                >
-                  <motion.div
-                    className="flex items-center"
-                    whileHover={{ x: 5 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                <Link href="/faq">
+                  <Button
+                    variant="outline"
+                    className="px-12 py-5 text-lg font-semibold rounded-xl border-2 border-[#199df4]/30 text-[#199df4] bg-white/80 backdrop-blur-sm hover:bg-sky-50 hover:border-[#199df4]/50 hover:shadow-xl transition-all duration-300 group ripple magnetic-btn cta-aurora"
                   >
                     <motion.div
-                      whileHover={{ rotate: 15 }}
-                      transition={{ type: "spring", stiffness: 300 }}
+                      className="flex items-center"
+                      whileHover={{ x: 5 }}
+                      transition={{ type: "spring", stiffness: 400 }}
                     >
-                      <FileText className="h-5 w-5 mr-3" />
+                      <motion.div
+                        whileHover={{ rotate: 15 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <FileText className="h-5 w-5 mr-3" />
+                      </motion.div>
+                      View FAQs
+                      <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </motion.div>
-                    View FAQs
-                    <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </motion.div>
-                </Button>
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
 
@@ -723,15 +724,7 @@ export default function HomePage() {
                       <CardTitle className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-[#199df4] transition-colors duration-300">
                         {type.title}
                       </CardTitle>
-                      <CardDescription className="text-gray-600 mb-4 leading-relaxed">{type.desc}</CardDescription>
-                      <motion.div
-                        className="text-2xl font-bold text-[#199df4]"
-                        whileHover={{
-                          scale: 1.05
-                        }}
-                      >
-                        Starting at {type.price}
-                      </motion.div>
+                      <CardDescription className="text-gray-600 leading-relaxed">{type.desc}</CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <Link href="/auth/signup">
