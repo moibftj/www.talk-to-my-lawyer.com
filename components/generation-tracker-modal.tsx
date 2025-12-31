@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, Loader2, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"
 
 export type LetterStatus =
   | "draft"
@@ -57,7 +58,7 @@ export function GenerationTrackerModal({
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "letters", filter: `id=eq.${letterId}` },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<{ status: string }>) => {
           const nextStatus = payload.new?.status as LetterStatus | undefined
           if (nextStatus) {
             setStatus(nextStatus)
