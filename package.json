@@ -86,6 +86,7 @@
     "@types/pg": "^8.16.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.7",
+    "@vercel/analytics": "^1.6.1",
     "ai": "^6.0.3",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
