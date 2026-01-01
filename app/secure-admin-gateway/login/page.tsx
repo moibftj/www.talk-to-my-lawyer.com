@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({
           email,
           password,
-          portalKey
+          portalKey,
         }),
       })
 
