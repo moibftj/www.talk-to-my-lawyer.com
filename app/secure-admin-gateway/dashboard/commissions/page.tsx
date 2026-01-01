@@ -19,7 +19,7 @@ export default async function AdminCommissionsPage() {
     .from('commissions')
     .select(`
       *,
-      profiles!commissions_employee_id_fkey (
+      profiles!employee_id (
         full_name,
         email
       ),

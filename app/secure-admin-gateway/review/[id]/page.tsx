@@ -24,7 +24,7 @@ export default async function ReviewLetterDetailPage({ params }: { params: Promi
     .from('letters')
     .select(`
       *,
-      profiles!letters_user_id_fkey (
+      profiles (
         id,
         full_name,
         email,
@@ -45,7 +45,7 @@ export default async function ReviewLetterDetailPage({ params }: { params: Promi
     .from('letter_audit_trail')
     .select(`
       *,
-      profiles!letter_audit_trail_performed_by_fkey (
+      profiles!performed_by (
         full_name,
         email
       )

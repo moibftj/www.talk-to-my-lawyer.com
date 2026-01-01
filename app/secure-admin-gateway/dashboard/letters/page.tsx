@@ -18,7 +18,7 @@ export default async function AdminLettersPage() {
     .from('letters')
     .select(`
       *,
-      profiles!letters_user_id_fkey (
+      profiles (
         full_name,
         email
       )
