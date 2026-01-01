@@ -14,7 +14,7 @@ export default async function ReviewCenterPage() {
     .from('letters')
     .select(`
       *,
-      profiles!letters_user_id_fkey (
+      profiles (
         id,
         full_name,
         email

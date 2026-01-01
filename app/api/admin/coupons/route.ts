@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         usage_count,
         created_at,
         employee_id,
-        profiles!employee_coupons_employee_id_fkey (
+        profiles!employee_id (
           full_name,
           email
         )
