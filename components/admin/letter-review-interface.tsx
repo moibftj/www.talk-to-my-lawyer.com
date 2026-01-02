@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -37,7 +37,8 @@ import {
   AlertTriangle,
   Send,
   Download,
-  History
+  History,
+  Loader2
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Letter, LetterAuditTrail } from "@/lib/types/letter.types"
@@ -49,13 +50,23 @@ interface LetterReviewInterfaceProps {
 }
 
 export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterfaceProps) {
-  const supabase = createClient()
+  const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(letter.final_content || letter.ai_draft_content || "")
   const [reviewNotes, setReviewNotes] = useState("")
   const [rejectionReason, setRejectionReason] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("review")
+  const [newStatus, setNewStatus] = useState<string>("")
+
+  // Helper to get admin headers with CSRF token
+  const getAdminHeaders = async (includeContentType = true) => {
+    const csrfToken = await getAdminCsrfToken()
+    return {
+      ...(includeContentType ? { 'Content-Type': 'application/json' } : {}),
+      'x-csrf-token': csrfToken,
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -74,28 +85,24 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
   const handleSaveEdit = async () => {
     setIsLoading(true)
     try {
-      const { error } = await supabase
-        .from("letters")
-        .update({
-          final_content: editedContent,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", letter.id)
-
-      if (error) throw error
-
-      // Log the edit action
-      await supabase.rpc("log_letter_audit", {
-        p_letter_id: letter.id,
-        p_action: "content_edited",
-        p_old_status: letter.status,
-        p_new_status: letter.status,
-        p_notes: "Letter content edited by admin"
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/admin/letters/${letter.id}/update`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: "edit_content",
+          finalContent: editedContent,
+        }),
       })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to save edits")
+      }
 
       toast.success("Letter content saved successfully")
       setIsEditing(false)
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       toast.error("Failed to save edits: " + (error instanceof Error ? error.message : "Unknown error"))
     } finally {
@@ -106,31 +113,24 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
   const handleApprove = async () => {
     setIsLoading(true)
     try {
-      const { error } = await supabase
-        .from("letters")
-        .update({
-          status: "approved",
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString(),
-          review_notes: reviewNotes,
-          final_content: editedContent,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", letter.id)
-
-      if (error) throw error
-
-      // Log the approval
-      await supabase.rpc("log_letter_audit", {
-        p_letter_id: letter.id,
-        p_action: "approved",
-        p_old_status: letter.status,
-        p_new_status: "approved",
-        p_notes: reviewNotes || "Letter approved by admin"
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/admin/letters/${letter.id}/update`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: "approve",
+          finalContent: editedContent,
+          reviewNotes,
+        }),
       })
 
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to approve letter")
+      }
+
       toast.success("Letter approved successfully")
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       toast.error("Failed to approve letter: " + (error instanceof Error ? error.message : "Unknown error"))
     } finally {
@@ -146,31 +146,24 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
 
     setIsLoading(true)
     try {
-      const { error } = await supabase
-        .from("letters")
-        .update({
-          status: "rejected",
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString(),
-          rejection_reason: rejectionReason,
-          review_notes: reviewNotes,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", letter.id)
-
-      if (error) throw error
-
-      // Log the rejection
-      await supabase.rpc("log_letter_audit", {
-        p_letter_id: letter.id,
-        p_action: "rejected",
-        p_old_status: letter.status,
-        p_new_status: "rejected",
-        p_notes: `Rejected: ${rejectionReason}`
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/admin/letters/${letter.id}/update`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: "reject",
+          rejectionReason,
+          reviewNotes,
+        }),
       })
 
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to reject letter")
+      }
+
       toast.success("Letter rejected")
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       toast.error("Failed to reject letter: " + (error instanceof Error ? error.message : "Unknown error"))
     } finally {
@@ -181,30 +174,77 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
   const handleMarkCompleted = async () => {
     setIsLoading(true)
     try {
-      const { error } = await supabase
-        .from("letters")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", letter.id)
-
-      if (error) throw error
-
-      // Log completion
-      await supabase.rpc("log_letter_audit", {
-        p_letter_id: letter.id,
-        p_action: "completed",
-        p_old_status: letter.status,
-        p_new_status: "completed",
-        p_notes: "Letter marked as completed"
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/admin/letters/${letter.id}/update`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: "mark_completed",
+        }),
       })
 
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to mark as completed")
+      }
+
       toast.success("Letter marked as completed")
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       toast.error("Failed to complete letter: " + (error instanceof Error ? error.message : "Unknown error"))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleStatusChange = async (status: string) => {
+    if (!status) return
+
+    setIsLoading(true)
+    try {
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/admin/letters/${letter.id}/update`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: status === "approved" ? "approve" : status === "rejected" ? "reject" : "mark_completed",
+          ...(status === "rejected" && { rejectionReason: "Status changed by admin" }),
+          ...(status === "approved" && { finalContent: editedContent }),
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to update status")
+      }
+
+      toast.success(`Status updated to ${status.replace("_", " ")}`)
+      setNewStatus("")
+      router.refresh()
+    } catch (error: unknown) {
+      toast.error("Failed to update status: " + (error instanceof Error ? error.message : "Unknown error"))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSendToUser = async () => {
+    setIsLoading(true)
+    try {
+      const headers = await getAdminHeaders()
+      const response = await fetch(`/api/letters/${letter.id}/send-email`, {
+        method: "POST",
+        headers,
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to send letter")
+      }
+
+      toast.success("Letter sent to user successfully")
+    } catch (error: unknown) {
+      toast.error("Failed to send letter: " + (error instanceof Error ? error.message : "Unknown error"))
     } finally {
       setIsLoading(false)
     }
@@ -226,19 +266,13 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to improve letter")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to improve letter")
+      }
 
       const { improvedContent } = await response.json()
       setEditedContent(improvedContent)
-
-      // Log AI improvement
-      await supabase.rpc("log_letter_audit", {
-        p_letter_id: letter.id,
-        p_action: "ai_improved",
-        p_old_status: letter.status,
-        p_new_status: letter.status,
-        p_notes: "Letter content improved with AI"
-      })
 
       toast.success("Letter improved with AI suggestions")
     } catch (error: unknown) {
@@ -254,7 +288,10 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
         method: "POST",
       })
 
-      if (!response.ok) throw new Error("Failed to generate PDF")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to generate PDF")
+      }
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -316,8 +353,17 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                       disabled={isLoading}
                       className="flex-1"
                     >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Approve Letter
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Approving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Approve Letter
+                        </>
+                      )}
                     </Button>
                     <Dialog>
                       <DialogTrigger asChild>
@@ -351,7 +397,14 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                             onClick={handleReject}
                             disabled={isLoading || !rejectionReason.trim()}
                           >
-                            Reject Letter
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Rejecting...
+                              </>
+                            ) : (
+                              "Reject Letter"
+                            )}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -365,8 +418,17 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                     disabled={isLoading}
                     className="flex-1"
                   >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Mark as Completed
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Completing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark as Completed
+                      </>
+                    )}
                   </Button>
                 )}
               </div>
@@ -390,8 +452,17 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                         onClick={handleSaveEdit}
                         disabled={isLoading}
                       >
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Changes
+                          </>
+                        )}
                       </Button>
                       <Button
                         variant="outline"
@@ -399,6 +470,7 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                           setIsEditing(false)
                           setEditedContent(letter.final_content || letter.ai_draft_content || "")
                         }}
+                        disabled={isLoading}
                       >
                         Cancel
                       </Button>
@@ -409,7 +481,14 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                     variant="secondary"
                     disabled={isLoading}
                   >
-                    ✨ Improve with AI
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Improving...
+                      </>
+                    ) : (
+                      "✨ Improve with AI"
+                    )}
                   </Button>
                 </div>
               </div>
@@ -449,12 +528,22 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
                   Download PDF
                 </Button>
                 <Button
+                  onClick={handleSendToUser}
                   variant="outline"
                   className="flex items-center justify-center"
                   disabled={isLoading}
                 >
-                  <Send className="mr-2 h-4 w-4" />
-                  Send to User
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send to User
+                    </>
+                  )}
                 </Button>
               </div>
 
@@ -463,7 +552,11 @@ export function LetterReviewInterface({ letter, auditTrail }: LetterReviewInterf
               {/* Status Management */}
               <div>
                 <Label>Change Status</Label>
-                <Select>
+                <Select
+                  value={newStatus}
+                  onValueChange={handleStatusChange}
+                  disabled={isLoading}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select new status" />
                   </SelectTrigger>
