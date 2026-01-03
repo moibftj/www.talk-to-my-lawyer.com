@@ -17,12 +17,12 @@
 -- Create admin sub-role enum
 CREATE TYPE admin_sub_role AS ENUM ('system_admin', 'attorney_admin');
 
--- Add admin_sub_role column to profiles table
+-- Add admin_sub_role column to profiles table (nullable - only admin users should have this populated)
 ALTER TABLE profiles
 ADD COLUMN IF NOT EXISTS admin_sub_role admin_sub_role;
 
 -- Add comment for documentation
-COMMENT ON COLUMN profiles.admin_sub_role IS 'Sub-role for admin users: system_admin (full access), attorney_admin (letter review only)';
+COMMENT ON COLUMN profiles.admin_sub_role IS 'Sub-role for admin users only: system_admin (full access), attorney_admin (letter review only). NULL for subscribers/employees.';
 
 -- Create helper function to get current user's admin sub-role
 CREATE OR REPLACE FUNCTION public.get_admin_sub_role()
@@ -41,9 +41,10 @@ BEGIN
     RAISE EXCEPTION 'User is not an admin';
   END IF;
 
-  -- If admin_sub_role is NULL (existing admins), default to system_admin
+  -- Admin users should always have admin_sub_role populated due to constraint
+  -- But handle legacy case where it might be NULL
   IF admin_sub IS NULL THEN
-    RETURN 'system_admin'::admin_sub_role;
+    RAISE EXCEPTION 'Admin user has NULL admin_sub_role - data integrity issue';
   END IF;
 
   RETURN admin_sub;
@@ -67,9 +68,10 @@ BEGIN
     RAISE EXCEPTION 'User is not an admin';
   END IF;
 
-  -- If admin_sub_role is NULL (existing admins), default to system_admin
+  -- Admin users should always have admin_sub_role populated due to constraint
+  -- But handle legacy case where it might be NULL
   IF admin_sub IS NULL THEN
-    RETURN 'system_admin'::admin_sub_role;
+    RAISE EXCEPTION 'Admin user has NULL admin_sub_role - data integrity issue';
   END IF;
 
   RETURN admin_sub;
@@ -85,7 +87,7 @@ BEGIN
     FROM public.profiles
     WHERE id = auth.uid()
     AND role = 'admin'::user_role
-    AND (admin_sub_role = 'system_admin'::admin_sub_role OR admin_sub_role IS NULL)
+    AND admin_sub_role = 'system_admin'::admin_sub_role
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
@@ -123,9 +125,13 @@ SET admin_sub_role = 'system_admin'
 WHERE role = 'admin'::user_role
 AND admin_sub_role IS NULL;
 
--- Set NOT NULL constraint after setting defaults
+-- Add check constraint: only admin users can have non-null admin_sub_role
 ALTER TABLE profiles
-ALTER COLUMN admin_sub_role SET NOT NULL;
+ADD CONSTRAINT admin_sub_role_only_for_admins
+CHECK (
+  (role = 'admin'::user_role AND admin_sub_role IS NOT NULL) OR
+  (role != 'admin'::user_role AND admin_sub_role IS NULL)
+);
 
 -- Grant execute on helper functions
 GRANT EXECUTE ON FUNCTION public.get_admin_sub_role TO authenticated;
