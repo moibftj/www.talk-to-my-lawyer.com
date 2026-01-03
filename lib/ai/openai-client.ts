@@ -11,14 +11,15 @@
  */
 
 import { openai, createOpenAI } from "@ai-sdk/openai"
+import type { OpenAIProvider } from "@ai-sdk/openai"
 
 /**
- * Get an OpenAI client configured for Vercel AI Gateway (if available)
+ * Get an OpenAI provider configured for Vercel AI Gateway (if available)
  * or direct OpenAI connection (fallback)
  *
- * @returns OpenAI provider function
+ * @returns OpenAI provider function (call with model name to get a model)
  */
-export function getOpenAIClient() {
+export function getOpenAIProvider(): OpenAIProvider {
   const gatewayApiKey = process.env.AI_GATEWAY_API_KEY
 
   if (gatewayApiKey) {
@@ -40,5 +41,5 @@ export function getOpenAIClient() {
  * @returns OpenAI model instance
  */
 export function getOpenAIModel(model: string = "gpt-4-turbo") {
-  return getOpenAIClient()(model)
+  return getOpenAIProvider()(model)
 }
