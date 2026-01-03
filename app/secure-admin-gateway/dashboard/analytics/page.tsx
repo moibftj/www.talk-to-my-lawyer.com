@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
                       outerRadius={80}
                       paddingAngle={5}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     >
                       {letterStatusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -339,7 +339,7 @@ export default function AnalyticsPage() {
                       outerRadius={80}
                       paddingAngle={5}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     >
                       {subscriptionData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -403,7 +403,7 @@ export default function AnalyticsPage() {
                     tickFormatter={(value) => `$${value}`}
                   />
                   <Tooltip
-                    formatter={(value: number) => [`$${value.toFixed(2)}`, '']}
+                    formatter={(value: number | undefined) => [`$${(value ?? 0).toFixed(2)}`, '']}
                     labelFormatter={(label) => {
                       const [year, month] = label.split('-')
                       return new Date(Number(year), Number(month) - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })

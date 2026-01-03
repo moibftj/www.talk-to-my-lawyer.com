@@ -108,7 +108,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     const response: ErrorResponse = {
       error: 'Validation failed',
       code: 'VALIDATION_ERROR',
-      details: error.errors,
+      details: error.issues,
     }
 
     if (isDevelopment) {

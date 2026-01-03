@@ -125,3 +125,13 @@ export interface CouponUsage {
   fraud_detection_data: Record<string, any> | null
   created_at: string
 }
+
+export interface Admin {
+  id: string
+  email: string
+  full_name: string | null
+  role: 'admin'
+  admin_sub_role: AdminSubRole | null
+  created_at: string
+  updated_at: string
+}

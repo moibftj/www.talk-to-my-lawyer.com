@@ -106,12 +106,12 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 
 function ChartTooltipContent({
   active,
-  payload,
+  payload: payloadProp,
   className,
   indicator = 'dot',
   hideLabel = false,
   hideIndicator = false,
-  label,
+  label: labelProp,
   labelFormatter,
   labelClassName,
   formatter,
@@ -127,6 +127,9 @@ function ChartTooltipContent({
     labelKey?: string
   }) {
   const { config } = useChart()
+  // Type assertions for payload and label
+  const payload = payloadProp as Array<{ name?: string; dataKey?: string; value?: unknown; color?: string; payload?: Record<string, unknown> }> | undefined
+  const label = labelProp as string | undefined
 
   const tooltipLabel = React.useMemo(() => {
     if (hideLabel || !payload?.length) {
@@ -179,10 +182,10 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
+        {payload.map((item: { name?: string; dataKey?: string; value?: unknown; color?: string; payload?: Record<string, unknown> }, index: number) => {
           const key = `${nameKey || item.name || item.dataKey || 'value'}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const indicatorColor = color || item.payload?.fill || item.color
 
           return (
             <div
@@ -253,15 +256,17 @@ const ChartLegend = RechartsPrimitive.Legend
 function ChartLegendContent({
   className,
   hideIcon = false,
-  payload,
+  payload: payloadProp,
   verticalAlign = 'bottom',
   nameKey,
 }: React.ComponentProps<'div'> &
-  Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+  Pick<RechartsPrimitive.LegendProps, 'verticalAlign'> & {
+    payload?: Array<{ value?: string; dataKey?: string; color?: string }>
     hideIcon?: boolean
     nameKey?: string
   }) {
   const { config } = useChart()
+  const payload = payloadProp as Array<{ value?: string; dataKey?: string; color?: string }> | undefined
 
   if (!payload?.length) {
     return null
@@ -275,7 +280,7 @@ function ChartLegendContent({
         className,
       )}
     >
-      {payload.map((item) => {
+      {payload.map((item: { value?: string; dataKey?: string; color?: string }) => {
         const key = `${nameKey || item.dataKey || 'value'}`
         const itemConfig = getPayloadConfigFromPayload(config, item, key)
 

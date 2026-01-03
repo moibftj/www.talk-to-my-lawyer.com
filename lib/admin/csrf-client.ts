@@ -19,5 +19,5 @@ export async function getAdminCsrfToken(): Promise<string> {
   cachedToken = data.csrfToken
   cachedExpiresAt = typeof data.expiresAt === 'number' ? data.expiresAt : now + 10 * 60 * 1000
 
-  return cachedToken
+  return cachedToken!
 }

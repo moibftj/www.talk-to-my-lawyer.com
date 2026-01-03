@@ -110,7 +110,7 @@ export const PRODUCTION_EMAIL_TEMPLATES = {
       <h2>Subscription Details:</h2>
       <ul>
         <li><strong>Plan:</strong> {{planName}}</li>
-        <li><strong>Amount:</strong> ${{amount}}</li>
+        <li><strong>Amount:</strong> \\${{amount}}</li>
         <li><strong>Letter Credits:</strong> {{letterCredits}}</li>
         <li><strong>Valid Until:</strong> {{expiryDate}}</li>
       </ul>
@@ -132,14 +132,14 @@ export const PRODUCTION_EMAIL_TEMPLATES = {
       
       <h2>Commission Details:</h2>
       <ul>
-        <li><strong>Sale Amount:</strong> ${{saleAmount}}</li>
+        <li><strong>Sale Amount:</strong> \\${{saleAmount}}</li>
         <li><strong>Commission Rate:</strong> 5%</li>
-        <li><strong>Commission Earned:</strong> ${{commissionAmount}}</li>
+        <li><strong>Commission Earned:</strong> \\${{commissionAmount}}</li>
         <li><strong>Coupon Used:</strong> {{couponCode}}</li>
       </ul>
       
       <div style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 16px; margin: 20px 0;">
-        <p><strong>Total Pending Commissions:</strong> ${{totalPending}}</p>
+        <p><strong>Total Pending Commissions:</strong> \\${{totalPending}}</p>
         <p>Request payout when you reach $50 minimum.</p>
       </div>
       

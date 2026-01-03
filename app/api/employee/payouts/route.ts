@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     // Calculate available balance
     const { data: commissions } = await supabase
       .from('commissions')
-      .select('amount, status')
+      .select('commission_amount, status')
       .eq('employee_id', user.id)
       .eq('status', 'pending')
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       .eq('employee_id', user.id)
       .eq('status', 'pending')
 
-    const pendingCommissions = commissions?.reduce((sum, c) => sum + Number(c.commission_amount), 0) || 0
+    const pendingCommissions = commissions?.reduce((sum, c) => sum + Number(c.commission_amount || 0), 0) || 0
     const pendingRequests = existingRequests?.reduce((sum, r) => sum + Number(r.amount), 0) || 0
     const availableBalance = pendingCommissions - pendingRequests
 

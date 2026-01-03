@@ -25,7 +25,7 @@ import {
   shouldSkipDeduction,
 } from '@/lib/services/allowance-service'
 import type { LetterGenerationResponse } from '@/lib/types/letter.types'
-import { createBusinessSpan, createDatabaseSpan, addSpanAttributes, recordSpanEvent } from '@/lib/monitoring/tracing'
+import { createBusinessSpan, createDatabaseSpan, createAISpan, addSpanAttributes, recordSpanEvent } from '@/lib/monitoring/tracing'
 
 export const runtime = "nodejs"
 

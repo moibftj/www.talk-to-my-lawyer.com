@@ -68,10 +68,13 @@ export async function setupTracing(): Promise<void> {
           },
           // Add custom attributes to spans
           requestHook: (span, request) => {
-            span.setAttributes({
-              'http.route': request.url,
-              'http.user_agent': request.headers?.['user-agent'] || '',
-            })
+            // Type guard for IncomingMessage
+            if ('url' in request && 'headers' in request) {
+              span.setAttributes({
+                'http.route': (request as { url?: string }).url || '',
+                'http.user_agent': ((request as { headers?: Record<string, string> }).headers?.['user-agent']) || '',
+              })
+            }
           },
         }),
       ],
