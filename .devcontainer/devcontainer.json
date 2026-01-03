@@ -18,7 +18,10 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-			"terminal.integrated.defaultProfile.linux": "zsh"
+			"terminal.integrated.defaultProfile.linux": "zsh",
+			"settings": {
+				"terminal.integrated.wordWrap": true
+			}
 		}
 	},
 
