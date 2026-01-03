@@ -12,21 +12,30 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-echo "🔌 Installing Powerlevel10k theme..."
+echo "🔧 Configuring git for proper line endings..."
+git config --global core.autocrlf input
+git config --global core.eol lf
+
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+echo "🔌 Installing Powerlevel10k theme..."
 if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM/themes/powerlevel10k"
+  git -c core.autocrlf=false clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM/themes/powerlevel10k"
 fi
 
 echo "🔌 Installing zsh-autosuggestions..."
 if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
-  git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+  git -c core.autocrlf=false clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 fi
 
 echo "🔌 Installing zsh-syntax-highlighting..."
 if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+  git -c core.autocrlf=false clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 fi
+
+# Fix any CRLF issues
+echo "🔧 Fixing line endings..."
+find "$ZSH_CUSTOM" -type f \( -name "*.zsh" -o -name "*.sh" \) -exec sed -i 's/\r$//' {} \; 2>/dev/null || true
 
 echo "⚙️  Configuring .zshrc..."
 # Backup existing .zshrc
