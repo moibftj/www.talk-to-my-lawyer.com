@@ -123,6 +123,12 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 EOF
 
+# Set zsh as default shell
+echo "🔧 Setting zsh as default shell..."
+if which zsh >/dev/null 2>&1; then
+  sed -i 's|/bin/sh|/bin/zsh|g' /etc/passwd 2>/dev/null || true
+fi
+
 echo "✅ Shell setup complete!"
-echo "📝 To apply immediately: source ~/.zshrc"
+echo "📝 To apply immediately: exec zsh"
 echo "🔄 Or restart your terminal"
