@@ -227,7 +227,7 @@ The platform relies on these PostgreSQL functions:
 
 **Admin Analytics**:
 - `get_admin_dashboard_stats()` - Comprehensive dashboard stats
-- `is_system_admin()` - Check if user is system admin
+- `is_super_admin()` - Check if user is system admin
 - `is_attorney_admin()` - Check if user is attorney admin
 
 ---
@@ -240,7 +240,7 @@ The platform supports **multiple admin users** who share the same admin dashboar
 
 | Role | Sub-Role | Access Level |
 |------|----------|--------------|
-| Admin | `system_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
+| Admin | `super_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
 | Admin | `attorney_admin` | Limited access: Letter review center, profile settings only |
 
 ### Creating Admin Users
@@ -260,7 +260,7 @@ npx dotenv-cli -e .env.local -- npx tsx scripts/create-additional-admin.ts admin
 1. Creates a Supabase Auth user (or updates if exists)
 2. Sets `role = 'admin'` in the profiles table
 3. Auto-confirms email (no verification required)
-4. Sets `admin_sub_role = 'system_admin'` by default
+4. Sets `admin_sub_role = 'super_admin'` by default
 
 #### Method 2: Manual Database Update
 
@@ -270,7 +270,7 @@ npx dotenv-cli -e .env.local -- npx tsx scripts/create-additional-admin.ts admin
 -- Step 2: Update role to admin
 UPDATE profiles
 SET role = 'admin',
-    admin_sub_role = 'system_admin',  -- or 'attorney_admin'
+    admin_sub_role = 'super_admin',  -- or 'attorney_admin'
     updated_at = NOW()
 WHERE email = 'admin@example.com';
 ```

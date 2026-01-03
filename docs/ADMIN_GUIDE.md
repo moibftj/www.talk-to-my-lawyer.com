@@ -12,7 +12,7 @@ The platform uses a **multi-admin system** that allows multiple administrators t
 - **Shared Dashboard**: All admins access `/secure-admin-gateway`
 - **Individual Credentials**: Each admin has their own email/password
 - **Portal Key**: Shared secret for additional security layer
-- **Sub-Roles**: System Admin (full access) and Attorney Admin (letter review only)
+- **Sub-Roles**: Super Admin (full access) and Attorney Admin (letter review only)
 
 ## Admin Role Structure
 
@@ -20,14 +20,14 @@ The platform uses a **multi-admin system** that allows multiple administrators t
 
 | Role | Sub-Role | Access Level |
 |------|----------|--------------|
-| Admin | `system_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
+| Admin | `super_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
 | Admin | `attorney_admin` | Limited access: Letter review center, profile settings only |
 
 ### Helper Functions
 
-- `is_system_admin()` - Returns true for `role='admin'` AND `admin_sub_role='system_admin'`
+- `is_super_admin()` - Returns true for `role='admin'` AND `admin_sub_role='super_admin'`
 - `is_attorney_admin()` - Returns true for `role='admin'` AND `admin_sub_role='attorney_admin'`
-- `get_admin_dashboard_stats()` - Comprehensive stats for System Admin only
+- `get_admin_dashboard_stats()` - Comprehensive stats for Super Admin only
 
 ## Authentication Flow
 
@@ -87,7 +87,7 @@ npx dotenv-cli -e .env.local -- npx tsx scripts/create-additional-admin.ts john@
 -- Step 2: Update role to admin
 UPDATE profiles
 SET role = 'admin',
-    admin_sub_role = 'system_admin',  -- or 'attorney_admin'
+    admin_sub_role = 'super_admin',  -- or 'attorney_admin'
     updated_at = NOW()
 WHERE email = 'admin@example.com';
 ```
@@ -134,7 +134,7 @@ Admins require three credentials to login:
 
 ## Admin Permissions
 
-### System Admin Permissions
+### Super Admin Permissions
 
 | Permission | Description |
 |------------|-------------|
@@ -205,7 +205,7 @@ Since passwords are managed by Supabase Auth:
 
 ```sql
 UPDATE profiles
-SET admin_sub_role = 'attorney_admin',  -- or 'system_admin'
+SET admin_sub_role = 'attorney_admin',  -- or 'super_admin'
     updated_at = NOW()
 WHERE email = 'admin@example.com';
 ```
@@ -220,7 +220,7 @@ CREATE TABLE profiles (
   email TEXT NOT NULL,
   full_name TEXT,
   role user_role DEFAULT 'subscriber',  -- 'subscriber' | 'employee' | 'admin'
-  admin_sub_role TEXT,                  -- 'system_admin' | 'attorney_admin'
+  admin_sub_role TEXT,                  -- 'super_admin' | 'attorney_admin'
   phone TEXT,
   company_name TEXT,
   stripe_customer_id TEXT,
@@ -342,7 +342,7 @@ If upgrading from the old single-admin system:
 | **Dashboard Location** | `/secure-admin-gateway` |
 | **Max Admins** | Unlimited |
 | **Role Field** | `profiles.role = 'admin'` |
-| **Sub-Roles** | `system_admin`, `attorney_admin` |
+| **Sub-Roles** | `super_admin`, `attorney_admin` |
 
 ---
 

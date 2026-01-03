@@ -95,7 +95,7 @@ skills/env-var-specialist/ (1 file):
 
 ### Admin Management → ADMIN_GUIDE.md
 - Multi-admin system overview
-- Admin role structure (System Admin, Attorney Admin)
+- Admin role structure (Super Admin, Attorney Admin)
 - Authentication flow (3-factor)
 - Creating and managing admin users
 - Permissions matrix

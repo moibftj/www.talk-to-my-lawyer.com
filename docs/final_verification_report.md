@@ -26,17 +26,17 @@ All tests have been executed successfully, and the data model is now fully align
 ### Role Structure
 | Role | Sub-Role | Access Level |
 |------|----------|--------------|
-| Admin | `system_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
+| Admin | `super_admin` | Full access: Analytics, all users, all letters, coupon tracking, commission management |
 | Admin | `attorney_admin` | Limited access: Letter review center, profile settings only |
 
 ### Helper Functions Verified
-- `is_system_admin()`: Returns true for users with `role='admin'` AND `admin_sub_role='system_admin'`
+- `is_super_admin()`: Returns true for users with `role='admin'` AND `admin_sub_role='super_admin'`
 - `is_attorney_admin()`: Returns true for users with `role='admin'` AND `admin_sub_role='attorney_admin'`
-- `get_admin_dashboard_stats()`: Returns comprehensive stats for System Admin
+- `get_admin_dashboard_stats()`: Returns comprehensive stats for Super Admin
 
 ### Current Admin User
 - **Email:** admin@talk-to-my-lawyer.com
-- **Sub-Role:** `system_admin` (Full access)
+- **Sub-Role:** `super_admin` (Full access)
 
 ---
 
@@ -61,15 +61,15 @@ All tests have been executed successfully, and the data model is now fully align
 
 ## 4. New Analytics Functions Added
 
-The following functions were created to support the System Admin dashboard:
+The following functions were created to support the Super Admin dashboard:
 
 | Function | Purpose | Access |
 |----------|---------|--------|
-| `get_coupon_usage_by_employee()` | Coupon usage stats grouped by employee | System Admin |
-| `get_letter_analytics()` | Letter generation stats (pending, approved, etc.) | System Admin |
-| `get_subscriber_analytics()` | Subscriber and revenue analytics | System Admin |
-| `get_letters_for_review()` | Letters pending review for attorney workflow | System Admin + Attorney Admin |
-| `update_letter_review(...)` | Update letter status with audit trail | System Admin + Attorney Admin |
+| `get_coupon_usage_by_employee()` | Coupon usage stats grouped by employee | Super Admin |
+| `get_letter_analytics()` | Letter generation stats (pending, approved, etc.) | Super Admin |
+| `get_subscriber_analytics()` | Subscriber and revenue analytics | Super Admin |
+| `get_letters_for_review()` | Letters pending review for attorney workflow | Super Admin + Attorney Admin |
+| `update_letter_review(...)` | Update letter status with audit trail | Super Admin + Attorney Admin |
 
 ---
 
@@ -96,10 +96,10 @@ draft → generating → pending_review → under_review → approved/rejected �
 |-----------|-------------|
 | `migration_014_schema_alignment.sql` | Added `total_letters_generated`, `is_licensed_attorney` to profiles |
 | `migration_015_function_updates.sql` | Fixed `deduct_letter_allowance`, `check_letter_allowance` |
-| `migration_016_analytics_enhancements.sql` | Added analytics functions for System Admin |
+| `migration_016_analytics_enhancements.sql` | Added analytics functions for Super Admin |
 
 ---
 
 ## Conclusion
 
-The Supabase project "Main" is now fully aligned with the application structure. All critical functions have been tested and verified. The admin role separation is correctly implemented, with System Admin having full analytics access and Attorney Admin having access only to the letter review workflow.
+The Supabase project "Main" is now fully aligned with the application structure. All critical functions have been tested and verified. The admin role separation is correctly implemented, with Super Admin having full analytics access and Attorney Admin having access only to the letter review workflow.

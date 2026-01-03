@@ -21,7 +21,7 @@ CREATE TABLE profiles (
   email TEXT NOT NULL,
   full_name TEXT,
   role user_role DEFAULT 'subscriber',
-  admin_sub_role TEXT,  -- 'system_admin' | 'attorney_admin'
+  admin_sub_role TEXT,  -- 'super_admin' | 'attorney_admin'
   phone TEXT,
   company_name TEXT,
   stripe_customer_id TEXT,
@@ -148,11 +148,11 @@ SELECT add_letter_allowances('USER_UUID', 4);
 
 ### Admin Helper Functions
 
-#### is_system_admin()
-Check if current user is System Admin
+#### is_super_admin()
+Check if current user is Super Admin
 
 ```sql
-SELECT is_system_admin();
+SELECT is_super_admin();
 ```
 
 #### is_attorney_admin()

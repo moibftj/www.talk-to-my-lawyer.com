@@ -57,7 +57,7 @@ They **complement** the main guides and are referenced from them.
 **Purpose**: Admin user management and multi-admin system  
 **Topics**:
 - Multi-admin system overview
-- Admin role structure (System Admin, Attorney Admin)
+- Admin role structure (Super Admin, Attorney Admin)
 - Creating and managing admin users
 - Permissions matrix
 - Troubleshooting

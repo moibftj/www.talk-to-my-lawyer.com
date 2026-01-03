@@ -160,14 +160,14 @@ if (authError) return authError
 ```typescript
 export type UserRole = 'subscriber' | 'employee' | 'admin'
 
-export type AdminSubRole = 'system_admin' | 'attorney_admin'
+export type AdminSubRole = 'super_admin' | 'attorney_admin'
 ```
 
 **Role Hierarchy:**
 - `subscriber` - Generate letters, view own letters, manage subscription
 - `employee` - Coupon code (20% off), commission tracking (5%), never sees letters
 - `admin` - Two sub-roles:
-  - `system_admin` - Full access: Analytics, all users, all letters, coupons, commissions
+  - `super_admin` - Full access: Analytics, all users, all letters, coupons, commissions
   - `attorney_admin` - Limited: Letter review center, profile settings only
 
 ### Letter Status Lifecycle
@@ -261,9 +261,9 @@ Key PostgreSQL functions:
 - `increment_total_letters(user_id)`
 
 **Admin:**
-- `is_system_admin()` - Check if user is system admin
+- `is_super_admin()` - Check if user is system admin
 - `is_attorney_admin()` - Check if user is attorney admin
-- `get_admin_dashboard_stats()` - Comprehensive stats for System Admin
+- `get_admin_dashboard_stats()` - Comprehensive stats for Super Admin
 
 **Employee:**
 - `get_employee_coupon(employee_id)` - Get coupon for employee

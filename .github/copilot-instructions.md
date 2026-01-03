@@ -92,13 +92,13 @@ Falls back to in-memory when Upstash unavailable.
 - `subscriber` - Generate letters, view own letters, manage subscription
 - `employee` - Coupon code (20% off), commission tracking (5%), never sees letters
 - `admin` - Two sub-roles via `profiles.admin_sub_role`:
-  - `system_admin` - Full access: Analytics, all users, all letters, coupon tracking, commission management
+  - `super_admin` - Full access: Analytics, all users, all letters, coupon tracking, commission management
   - `attorney_admin` - Limited access: Letter review center, profile settings only
 
 ### Admin Role Helper Functions
-- `is_system_admin()` - Returns true for `role='admin'` AND `admin_sub_role='system_admin'`
+- `is_super_admin()` - Returns true for `role='admin'` AND `admin_sub_role='super_admin'`
 - `is_attorney_admin()` - Returns true for `role='admin'` AND `admin_sub_role='attorney_admin'`
-- `get_admin_dashboard_stats()` - Comprehensive stats for System Admin only
+- `get_admin_dashboard_stats()` - Comprehensive stats for Super Admin only
 
 ### Elevating a User to Admin
 Admins are never created through normal signup. Use one of these methods:
