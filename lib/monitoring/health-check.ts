@@ -128,21 +128,39 @@ export class HealthChecker {
 
   /**
    * Check OpenAI service health
+   * Note: Only check if API key exists - don't make actual API calls in health check
    */
   private async checkOpenAIHealth(): Promise<ServiceHealth> {
+    const startTime = Date.now()
+
     try {
-      const result = await checkOpenAIHealth()
+      // Check if API key or Gateway key is configured
+      const hasOpenAIKey = !!process.env.OPENAI_API_KEY
+      const hasGatewayKey = !!process.env.AI_GATEWAY_API_KEY
+
+      const responseTime = Date.now() - startTime
+
+      if (!hasOpenAIKey && !hasGatewayKey) {
+        return {
+          status: 'unhealthy',
+          responseTime,
+          error: 'OpenAI API key or AI Gateway key not configured'
+        }
+      }
 
       return {
-        status: result.healthy ? 'healthy' : 'unhealthy',
-        responseTime: result.responseTime,
-        error: result.error,
-        details: { healthy: result.healthy }
+        status: 'healthy',
+        responseTime,
+        details: {
+          hasOpenAIKey,
+          hasGatewayKey
+        }
       }
 
     } catch (error: any) {
       return {
         status: 'unhealthy',
+        responseTime: Date.now() - startTime,
         error: error.message,
         details: { error: error.toString() }
       }
