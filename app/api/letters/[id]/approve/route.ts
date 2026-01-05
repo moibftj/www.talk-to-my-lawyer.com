@@ -10,7 +10,7 @@ import { getAdminCSRFToken, handleAdminLetterAction } from '@/lib/api/admin-acti
 // GET endpoint to provide CSRF token
 export async function GET(
   request: NextRequest,
-  _params: { params: { id: string } }
+  _params: { params: Promise<{ id: string }> }
 ) {
   return getAdminCSRFToken()
 }
