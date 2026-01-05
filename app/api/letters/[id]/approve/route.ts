@@ -18,7 +18,7 @@ export async function GET(
 // POST endpoint to approve a letter
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return handleAdminLetterAction(request, params, 'approve')
 }

@@ -12,13 +12,13 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResponse = await safeApplyRateLimit(request, apiRateLimit, 100, '1 m')
     if (rateLimitResponse) return rateLimitResponse
 
-    const { id } = params
+    const { id } = await params
     
     // Authenticate user
     const authResult = await authenticateUser()

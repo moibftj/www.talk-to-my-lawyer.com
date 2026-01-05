@@ -7,7 +7,7 @@ import { getOpenAIModel } from '@/lib/ai/openai-client'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Apply rate limiting
@@ -19,7 +19,7 @@ export async function POST(
     const validationError = await validateAdminAction(request)
     if (validationError) return validationError
 
-    const { id } = params
+    const { id } = await params
 
     const body = await request.json()
     const instruction = body?.instruction || body?.instructions
