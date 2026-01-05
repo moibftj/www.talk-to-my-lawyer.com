@@ -16,6 +16,12 @@ apt-get install -y --no-install-recommends \
     fd-find \
     2>/dev/null
 
+echo "🔧 Configuring git defaults..."
+# Avoid git pull divergence prompt by selecting merge behavior if unset.
+if ! git config --global --get pull.rebase >/dev/null 2>&1; then
+    git config --global pull.rebase false
+fi
+
 echo "🔧 Configuring powerful Bash environment..."
 
 # Backup existing .bashrc
