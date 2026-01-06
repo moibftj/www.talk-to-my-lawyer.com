@@ -1,62 +1,33 @@
 import type {
-  EmailProvider,
   EmailMessage,
   EmailResult,
   EmailProviderInterface,
   EmailTemplate,
   TemplateData,
 } from './types'
-import { ConsoleProvider } from './providers/console'
 import { ResendProvider } from './providers/resend'
 import { renderTemplate } from './templates'
 
 class EmailService {
-  private providers: Map<EmailProvider, EmailProviderInterface> = new Map()
-  private defaultProvider: EmailProvider
+  private provider: EmailProviderInterface
   private fromEmail: string
   private fromName: string
 
   constructor() {
-    // Initialize Resend provider (primary and only provider)
-    this.providers.set('resend', new ResendProvider())
-
-    // Console provider for development/fallback only
-    this.providers.set('console', new ConsoleProvider())
+    // Resend is the only email provider
+    this.provider = new ResendProvider()
 
     this.fromEmail = process.env.EMAIL_FROM || 'noreply@talk-to-my-lawyer.com'
     this.fromName = process.env.EMAIL_FROM_NAME || 'Talk-To-My-Lawyer'
-    this.defaultProvider = this.determineDefaultProvider()
-  }
 
-  private determineDefaultProvider(): EmailProvider {
-    // Use Resend if configured
-    const resendProvider = this.providers.get('resend')
-    if (resendProvider && resendProvider.isConfigured()) {
-      return 'resend'
+    // Verify Resend is configured
+    if (!this.provider.isConfigured()) {
+      console.error('[EmailService] Resend is not configured! Set RESEND_API_KEY environment variable.')
     }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[EmailService] Using console provider in development mode')
-      return 'console'
-    }
-
-    console.warn('[EmailService] Resend not configured, using console fallback')
-    return 'console'
-  }
-
-  getProvider(name?: EmailProvider): EmailProviderInterface {
-    const providerName = name || this.defaultProvider
-    const provider = this.providers.get(providerName)
-
-    if (!provider) {
-      throw new Error(`Unknown email provider: ${providerName}`)
-    }
-
-    return provider
   }
 
   isConfigured(): boolean {
-    return this.defaultProvider !== 'console' || process.env.NODE_ENV === 'development'
+    return this.provider.isConfigured()
   }
 
   getDefaultFrom(): { email: string; name: string } {
@@ -66,16 +37,14 @@ class EmailService {
     }
   }
 
-  async send(message: EmailMessage, provider?: EmailProvider): Promise<EmailResult> {
-    const emailProvider = this.getProvider(provider)
-
+  async send(message: EmailMessage): Promise<EmailResult> {
     const messageWithDefaults: EmailMessage = {
       ...message,
       from: message.from || this.getDefaultFrom(),
     }
 
     try {
-      const result = await emailProvider.send(messageWithDefaults)
+      const result = await this.provider.send(messageWithDefaults)
 
       if (result.success) {
         console.log(`[EmailService] Email sent successfully via ${result.provider}:`, {
@@ -95,7 +64,7 @@ class EmailService {
       return {
         success: false,
         error: errorMessage,
-        provider: emailProvider.name,
+        provider: this.provider.name,
       }
     }
   }
@@ -103,20 +72,16 @@ class EmailService {
   async sendTemplate(
     template: EmailTemplate,
     to: string | string[],
-    data: TemplateData,
-    provider?: EmailProvider
+    data: TemplateData
   ): Promise<EmailResult> {
     const { subject, text, html } = renderTemplate(template, data)
 
-    return this.send(
-      {
-        to,
-        subject,
-        text,
-        html,
-      },
-      provider
-    )
+    return this.send({
+      to,
+      subject,
+      text,
+      html,
+    })
   }
 
   async sendWithRetry(
@@ -144,7 +109,7 @@ class EmailService {
     return lastResult || {
       success: false,
       error: 'Max retries exceeded',
-      provider: this.defaultProvider,
+      provider: this.provider.name,
     }
   }
 }
