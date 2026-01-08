@@ -93,15 +93,6 @@ vercel-add-env.sh
 vercel-env.json
 *.sh.local
 
-# Testing
-/coverage/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-.nyc_output/
-junit.xml
-
 # Emergent AI
 .emergent/
 

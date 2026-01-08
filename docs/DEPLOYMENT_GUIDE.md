@@ -19,7 +19,7 @@ Complete guide for deploying Talk-To-My-Lawyer to production, including CI/CD, V
 ### Pre-Deployment Validation
 
 #### Code Quality & Security
-- [ ] All tests passing: `pnpm test`
+- [ ] Manual test plan completed (see `docs/TESTING.md`)
 - [ ] Linting clean: `pnpm lint`
 - [ ] Security audit passed: `pnpm audit --audit-level=high`
 - [ ] Build successful: `CI=1 pnpm build`
