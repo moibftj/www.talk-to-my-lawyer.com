@@ -42,8 +42,8 @@ export default function AttorneyLoginPage() {
 
       // Use redirectUrl from response, default to attorney-portal review
       const redirectUrl = data.redirectUrl || '/attorney-portal/review'
-      router.push(redirectUrl)
-      router.refresh()
+      // Use window.location.href for reliable navigation with secure cookies
+      window.location.href = redirectUrl
 
     } catch (err: any) {
       console.error('[AttorneyLogin] Error:', err)
