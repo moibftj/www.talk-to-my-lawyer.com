@@ -41,8 +41,8 @@ export default function AdminLoginPage() {
 
       // Use redirectUrl from response (handles both super admin and attorney admin routing)
       const redirectUrl = data.redirectUrl || '/secure-admin-gateway/dashboard'
-      router.push(redirectUrl)
-      router.refresh()
+      // Use window.location.href for reliable navigation with secure cookies
+      window.location.href = redirectUrl
 
     } catch (err: any) {
       console.error('[AdminLogin] Error:', err)
