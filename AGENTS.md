@@ -24,7 +24,9 @@
 - Naming: components in PascalCase, hooks in `useX` form, route handlers as `route.ts`.
 
 ## Testing Guidelines
-- This project relies on manual testing (see `docs/TESTING.md`).
+- Automated tests live under `tests/` with Vitest + React Testing Library and Playwright.
+- `pnpm test` runs unit/component tests; `pnpm test:e2e` runs browser E2E checks; `pnpm test:all` runs both.
+- Manual testing is still required for full workflows (see `docs/TESTING.md`).
 - Enable test mode via `ENABLE_TEST_MODE="true"` and `NEXT_PUBLIC_TEST_MODE="true"`.
 - Use Stripe test card `4242 4242 4242 4242` and emails like `test+{type}@example.com`.
 - Helpful scripts: `node test-email-send.js`, `node scripts/test-supabase-connection.js`.
