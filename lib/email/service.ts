@@ -137,16 +137,17 @@ export async function sendTemplateEmail(
 
 /**
  * Queue a template email for reliable delivery with automatic retries
- * This is the preferred method for sending emails as it provides:
- * - Automatic retries on failure
- * - Persistence in case of server restart
- * - Processing via cron job
+ * NOW SENDS IMMEDIATELY - falls back to queue only on failure
+ * This provides:
+ * - Immediate delivery for most emails
+ * - Automatic retries on failure via queue
+ * - Persistence in case of server issues
  *
  * @param template - The email template to use
  * @param to - Recipient email address(es)
  * @param data - Template data
  * @param maxRetries - Maximum number of retry attempts (default: 3)
- * @returns Promise<string> - Queue item ID
+ * @returns Promise<string> - Message ID or queue item ID
  */
 export async function queueTemplateEmail(
   template: EmailTemplate,
@@ -155,9 +156,34 @@ export async function queueTemplateEmail(
   maxRetries: number = 3
 ): Promise<string> {
   const { renderTemplate } = await import('./templates')
-  const { getEmailQueue } = await import('./queue')
 
   const { subject, text, html } = renderTemplate(template, data)
+  
+  // Try to send immediately first
+  const emailService = getEmailService()
+  
+  if (emailService.isConfigured()) {
+    try {
+      const result = await emailService.send({
+        to,
+        subject,
+        text,
+        html,
+      })
+      
+      if (result.success) {
+        console.log('[Email] Sent immediately:', { to, subject, messageId: result.messageId })
+        return result.messageId || 'sent'
+      }
+      
+      console.warn('[Email] Immediate send failed, falling back to queue:', result.error)
+    } catch (error) {
+      console.warn('[Email] Immediate send error, falling back to queue:', error)
+    }
+  }
+  
+  // Fall back to queue for retry
+  const { getEmailQueue } = await import('./queue')
   const queue = getEmailQueue()
 
   return queue.enqueue({
