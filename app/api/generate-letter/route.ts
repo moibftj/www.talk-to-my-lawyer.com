@@ -15,7 +15,7 @@ import { letterGenerationRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-
 import { validateLetterGenerationRequest } from '@/lib/validation/letter-schema'
 import { generateTextWithRetry } from '@/lib/ai/openai-retry'
 import { getAdminEmails } from '@/lib/admin/letter-actions'
-import { sendTemplateEmail } from '@/lib/email/service'
+import { queueTemplateEmail } from '@/lib/email/service'
 import { successResponse, errorResponses, handleApiError } from '@/lib/api/api-error-handler'
 import {
   checkAndDeductAllowance,
@@ -369,13 +369,13 @@ async function notifyAdminsAboutNewLetter(letterId: string, title: string, lette
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-  // Send asynchronously - don't wait
-  sendTemplateEmail('admin-alert', adminEmails, {
+  // Queue admin notification for reliable delivery
+  queueTemplateEmail('admin-alert', adminEmails, {
     alertMessage: `New letter "${title}" requires review. Letter type: ${letterType}`,
     actionUrl: `${siteUrl}/secure-admin-gateway/review/${letterId}`,
     pendingReviews: 1,
   }).catch(error => {
-    console.error('[GenerateLetter] Failed to send admin notification:', error)
+    console.error('[GenerateLetter] Failed to queue admin notification:', error)
   })
 }
 

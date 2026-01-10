@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
-import { sendTemplateEmail } from '@/lib/email/service'
+import { queueTemplateEmail } from '@/lib/email/service'
 import { createStripeClient } from '@/lib/stripe/client'
 
 const stripe = createStripeClient()
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
 
             if (employeeProfile?.email) {
               const commissionAmount = finalPrice * 0.05
-              sendTemplateEmail('commission-earned', employeeProfile.email, {
+              queueTemplateEmail('commission-earned', employeeProfile.email, {
                 userName: employeeProfile.full_name || 'there',
                 commissionAmount: commissionAmount,
                 actionUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/commissions`,
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 
         if (userProfile?.email) {
           const planName = metadata.plan_type || 'Subscription'
-          sendTemplateEmail('subscription-confirmation', userProfile.email, {
+          queueTemplateEmail('subscription-confirmation', userProfile.email, {
             userName: userProfile.full_name || 'there',
             subscriptionPlan: planName,
             actionUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard`,
