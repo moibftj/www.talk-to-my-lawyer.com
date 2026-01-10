@@ -135,4 +135,37 @@ export async function sendTemplateEmail(
   return getEmailService().sendTemplate(template, to, data)
 }
 
+/**
+ * Queue a template email for reliable delivery with automatic retries
+ * This is the preferred method for sending emails as it provides:
+ * - Automatic retries on failure
+ * - Persistence in case of server restart
+ * - Processing via cron job
+ *
+ * @param template - The email template to use
+ * @param to - Recipient email address(es)
+ * @param data - Template data
+ * @param maxRetries - Maximum number of retry attempts (default: 3)
+ * @returns Promise<string> - Queue item ID
+ */
+export async function queueTemplateEmail(
+  template: EmailTemplate,
+  to: string | string[],
+  data: TemplateData,
+  maxRetries: number = 3
+): Promise<string> {
+  const { renderTemplate } = await import('./templates')
+  const { getEmailQueue } = await import('./queue')
+
+  const { subject, text, html } = renderTemplate(template, data)
+  const queue = getEmailQueue()
+
+  return queue.enqueue({
+    to,
+    subject,
+    text,
+    html,
+  }, maxRetries)
+}
+
 export { EmailService }

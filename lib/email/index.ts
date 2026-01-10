@@ -5,4 +5,5 @@ export {
   getEmailService,
   sendEmail,
   sendTemplateEmail,
+  queueTemplateEmail,
 } from './service'

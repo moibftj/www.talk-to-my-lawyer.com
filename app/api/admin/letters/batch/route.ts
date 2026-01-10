@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-redis'
-import { sendTemplateEmail } from '@/lib/email/service'
+import { queueTemplateEmail } from '@/lib/email/service'
 import { validateAdminAction } from '@/lib/admin/letter-actions'
 
 export const runtime = 'nodejs'
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         if (profile?.email && (action === 'approve' || action === 'reject')) {
           const template = action === 'approve' ? 'letter-approved' : 'letter-rejected'
           try {
-            await sendTemplateEmail(template, profile.email, {
+            await queueTemplateEmail(template, profile.email, {
               userName: profile.full_name || 'there',
               letterTitle: letter.title || 'Legal Letter',
               letterLink: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/letters/${letterId}`,

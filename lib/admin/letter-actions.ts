@@ -12,7 +12,7 @@ import {
 } from '@/lib/auth/admin-session'
 import { validateAdminRequest, generateAdminCSRF } from '@/lib/security/csrf'
 import { sanitizeString } from '@/lib/security/input-sanitizer'
-import { sendTemplateEmail } from '@/lib/email/service'
+import { queueTemplateEmail } from '@/lib/email/service'
 import type { EmailTemplate } from '@/lib/email/types'
 
 /**
@@ -168,15 +168,15 @@ export async function notifyLetterOwner(params: {
     .single()
 
   if (profile?.email) {
-    // Send email asynchronously - don't wait for it
+    // Queue email for reliable delivery with automatic retries
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    sendTemplateEmail(templateName, profile.email, {
+    queueTemplateEmail(templateName, profile.email, {
       userName: profile.full_name || 'there',
       ...templateData,
       letterLink: `${siteUrl}/dashboard/letters/${letterId}`,
       actionUrl: `${siteUrl}/dashboard/letters/${letterId}`,
     }).catch(error => {
-      console.error(`[Admin] Failed to send ${templateName} email:`, error)
+      console.error(`[Admin] Failed to queue ${templateName} email:`, error)
     })
   }
 }
