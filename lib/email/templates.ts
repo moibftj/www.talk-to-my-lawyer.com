@@ -77,6 +77,41 @@ function wrapHtml(content: string): string {
 }
 
 const templates: Record<EmailTemplate, (data: TemplateData) => TemplateOutput> = {
+  'email-confirmation': (data) => ({
+    subject: 'Confirm Your Email - Talk-To-My-Lawyer',
+    text: `
+Confirm Your Email Address
+
+Hi ${data.userName || 'there'},
+
+Please confirm your email address to complete your registration with Talk-To-My-Lawyer.
+
+Click the link below to verify your email:
+${data.actionUrl || ''}
+
+If you didn't create an account with us, you can safely ignore this email.
+
+This link will expire in 24 hours.
+
+Best regards,
+The Talk-To-My-Lawyer Team
+    `.trim(),
+    html: wrapHtml(`
+      <h2>Confirm Your Email Address</h2>
+      <p>Hi ${escapeHtml(data.userName || 'there')},</p>
+
+      <p>Please confirm your email address to complete your registration with Talk-To-My-Lawyer.</p>
+
+      <p style="text-align: center;">
+        <a href="${escapeHtml(data.actionUrl || '')}" class="button">Confirm Email Address</a>
+      </p>
+
+      <p><small>If you didn't create an account with us, you can safely ignore this email. This link will expire in 24 hours.</small></p>
+
+      <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
+    `),
+  }),
+
   welcome: (data) => ({
     subject: 'Welcome to Talk-To-My-Lawyer',
     text: `
