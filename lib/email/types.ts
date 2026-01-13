@@ -46,6 +46,7 @@ export interface EmailConfig {
 
 export type EmailTemplate =
   | 'welcome'
+  | 'email-confirmation'
   | 'password-reset'
   | 'password-reset-confirmation'
   | 'letter-approved'
