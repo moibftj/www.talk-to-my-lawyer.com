@@ -1,15 +1,15 @@
 import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 /**
  * Combine multiple class names into a single string
- * Commonly used with Tailwind CSS conditional classes
+ * Handles Tailwind CSS class conflicts using tailwind-merge
  */
-export function combineClassNames(...inputs: ClassValue[]) {
-  return clsx(inputs)
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-// Backwards compatibility alias
-export const cn = combineClassNames
+export const combineClassNames = cn
 
 /**
  * Format date object to string using simple pattern
