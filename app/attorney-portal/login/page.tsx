@@ -13,6 +13,7 @@ import { Scale } from 'lucide-react'
 export default function AttorneyLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [portalKey, setPortalKey] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function AttorneyLoginPage() {
         body: JSON.stringify({
           email,
           password,
+          portalKey,
         }),
       })
 
@@ -107,6 +109,21 @@ export default function AttorneyLoginPage() {
                 disabled={loading}
                 className="bg-slate-700/50 border-slate-600 text-white"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="portalKey" className="text-slate-200">Portal Access Key</Label>
+              <Input
+                id="portalKey"
+                type="password"
+                placeholder="Enter admin portal key"
+                value={portalKey}
+                onChange={(e) => setPortalKey(e.target.value)}
+                required
+                disabled={loading}
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+              />
+              <p className="text-xs text-slate-500">Required 3rd factor for admin access</p>
             </div>
 
             {error && (

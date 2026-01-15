@@ -34,6 +34,41 @@ export async function GET(
 
     const { id } = await params;
 
+    // For employees: verify they have a relationship to this letter
+    // (i.e., the letter was created by a user who used their referral coupon)
+    if (profile.role === 'employee') {
+      // Get the letter to find its owner
+      const { data: letter } = await supabase
+        .from('letters')
+        .select('user_id')
+        .eq('id', id)
+        .single();
+
+      if (!letter) {
+        return NextResponse.json(
+          { error: "Letter not found" },
+          { status: 404 }
+        );
+      }
+
+      // Check if this employee has any relationship to the letter owner
+      // (via subscription that used their coupon)
+      const { data: relationship } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', letter.user_id)
+        .eq('employee_id', user.id)
+        .limit(1)
+        .single();
+
+      if (!relationship) {
+        return NextResponse.json(
+          { error: "You do not have permission to view this letter's audit trail" },
+          { status: 403 }
+        );
+      }
+    }
+
     // Get audit trail for the letter
     const { data: auditTrail, error } = await supabase
       .from('letter_audit_trail')
