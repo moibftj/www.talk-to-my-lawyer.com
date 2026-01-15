@@ -10,6 +10,11 @@
 const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const dns = require('dns');
+
+// Force IPv4 to avoid ENETUNREACH on IPv6
+dns.setDefaultResultOrder('ipv4first');
+
 require('dotenv').config({ path: '.env.local' });
 require('dotenv').config(); // Fallback
 
