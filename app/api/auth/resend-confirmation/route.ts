@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email: user.email!,
+      password: 'temp-password-placeholder',
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://talk-to-my-lawyer.com'}/dashboard`,
       }
