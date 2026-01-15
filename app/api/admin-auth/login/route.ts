@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { verifyAdminCredentials, createAdminSession, type AdminSubRole } from '@/lib/auth/admin-session'
 import { adminRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-redis'
 
 /**
  * Admin login endpoint - Role-based authentication with sub-role routing
  *
- * No shared secret required. Each admin uses their own credentials.
- * Access is determined by:
- * 1. `role = 'admin'` in the profiles table
- * 2. `admin_sub_role` determines which portal they access:
- *    - 'super_admin' → /secure-admin-gateway (full access)
- *    - 'attorney_admin' → /attorney-portal (review only)
+ * Three-factor authentication:
+ * 1. ADMIN_PORTAL_KEY (shared secret environment variable)
+ * 2. Individual admin email/password (Supabase Auth)
+ * 3. `role = 'admin'` in the profiles table
+ *
+ * Access portal is determined by `admin_sub_role`:
+ * - 'super_admin' → /secure-admin-gateway (full access)
+ * - 'attorney_admin' → /attorney-portal (review only)
  *
  * Security benefits:
+ * - Portal key prevents unauthorized access to admin endpoints
  * - Individual accountability (each admin has unique credentials)
- * - No shared secret to leak or rotate
- * - Easy deactivation (just change the user's role)
  * - Full audit trail of which admin performed each action
  * - Separation of duties between system and attorney admins
+ * - Easy deactivation (just change the user's role)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -28,12 +31,38 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, password } = body
+    const { email, password, portalKey } = body
 
-    if (!email || !password) {
+    if (!email || !password || !portalKey) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Email, password, and portal key are required' },
         { status: 400 }
+      )
+    }
+
+    // Verify portal key (3rd factor authentication)
+    const validPortalKey = process.env.ADMIN_PORTAL_KEY
+    if (!validPortalKey) {
+      console.error('[AdminAuth] ADMIN_PORTAL_KEY not configured')
+      return NextResponse.json(
+        { error: 'Admin portal not properly configured' },
+        { status: 500 }
+      )
+    }
+
+    // Use timing-safe comparison to prevent timing attacks
+    const portalKeyBuffer = Buffer.from(portalKey)
+    const validKeyBuffer = Buffer.from(validPortalKey)
+
+    if (portalKeyBuffer.length !== validKeyBuffer.length ||
+        !timingSafeEqual(portalKeyBuffer, validKeyBuffer)) {
+      console.warn('[AdminAuth] Invalid portal key attempt:', {
+        email,
+        timestamp: new Date().toISOString()
+      })
+      return NextResponse.json(
+        { error: 'Invalid portal key' },
+        { status: 401 }
       )
     }
 
