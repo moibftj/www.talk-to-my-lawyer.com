@@ -40,10 +40,18 @@ async function runMigrations() {
   try {
     const parsed = new URL(connectionString);
     const hostname = parsed.hostname;
-    const addresses = await dns.promises.resolve4(hostname);
-    if (addresses && addresses.length > 0) {
-      console.log(`ℹ️  Resolved ${hostname} to ${addresses[0]}`);
-      parsed.hostname = addresses[0];
+    
+    const resolveIpv4 = () => new Promise((resolve, reject) => {
+      dns.lookup(hostname, { family: 4 }, (err, address) => {
+        if (err) reject(err);
+        else resolve(address);
+      });
+    });
+
+    const ip = await resolveIpv4();
+    if (ip) {
+      console.log(`ℹ️  Resolved ${hostname} to ${ip}`);
+      parsed.hostname = ip;
       connectionString = parsed.toString();
     }
   } catch (err) {
