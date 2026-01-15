@@ -11,15 +11,20 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const dns = require('dns');
+const url = require('url');
 
 // Force IPv4 to avoid ENETUNREACH on IPv6
-dns.setDefaultResultOrder('ipv4first');
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (e) {
+  // Ignore if not supported
+}
 
 require('dotenv').config({ path: '.env.local' });
 require('dotenv').config(); // Fallback
 
 // DB Connection string from env or constructed
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+let connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
 if (!connectionString) {
   console.error('❌ DATABASE_URL or POSTGRES_URL is not set.');
@@ -31,6 +36,20 @@ const MIGRATIONS_DIR = path.join(__dirname, '../supabase/migrations');
 async function runMigrations() {
   console.log('🚀 Starting migration process...');
   
+  // Resolve hostname to IPv4 strictly manually if possible
+  try {
+    const parsed = new URL(connectionString);
+    const hostname = parsed.hostname;
+    const addresses = await dns.promises.resolve4(hostname);
+    if (addresses && addresses.length > 0) {
+      console.log(`ℹ️  Resolved ${hostname} to ${addresses[0]}`);
+      parsed.hostname = addresses[0];
+      connectionString = parsed.toString();
+    }
+  } catch (err) {
+    console.warn('⚠️  Could not resolve hostname manually, proceeding with default:', err.message);
+  }
+
   const client = new Client({
     connectionString,
     ssl: { rejectUnauthorized: false }
