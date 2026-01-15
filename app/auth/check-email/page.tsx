@@ -10,6 +10,14 @@ import { Input } from '@/components/ui/input'
 import { DEFAULT_LOGO_ALT, DEFAULT_LOGO_SRC } from '@/lib/constants'
 
 export default function CheckEmailPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckEmailContent />
+    </Suspense>
+  )
+}
+
+function CheckEmailContent() {
   const searchParams = useSearchParams()
   const emailFromUrl = searchParams.get('email') || ''
   
