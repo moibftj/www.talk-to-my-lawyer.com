@@ -52,3 +52,7 @@ CREATE POLICY "Service role can manage email queue logs"
 
 -- Add comment for documentation
 COMMENT ON TABLE email_queue_logs IS 'Audit log for email queue processing with service-role-only access';
+
+-- 5. Add missing subscription_status enum values
+ALTER TYPE subscription_status ADD VALUE IF NOT EXISTS 'payment_failed';
+ALTER TYPE subscription_status ADD VALUE IF NOT EXISTS 'trialing';
