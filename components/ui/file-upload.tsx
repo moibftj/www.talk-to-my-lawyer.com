@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useCallback, useState } from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 export interface UploadedFile {
@@ -292,10 +293,13 @@ export function FileUpload({
                 {/* File icon or preview */}
                 <div className="shrink-0">
                   {file.preview ? (
-                    <img 
+                    <Image 
                       src={file.preview} 
                       alt={file.name}
-                      className="w-10 h-10 rounded object-cover"
+                      width={40}
+                      height={40}
+                      className="rounded object-cover"
+                      unoptimized
                     />
                   ) : (
                     getFileIcon(file.type)
