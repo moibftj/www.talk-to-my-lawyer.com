@@ -46,11 +46,20 @@ const baseStyles = `
   .header h1 { margin: 0; font-size: 24px; }
   .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; }
   .footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+  .footer a { color: #1a1a2e; text-decoration: underline; }
   .button { display: inline-block; background: #1a1a2e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
   .highlight { background: #f0f9ff; padding: 15px; border-left: 4px solid #0284c7; margin: 20px 0; }
+  .unsubscribe { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e0e0; }
 `
 
-function wrapHtml(content: string): string {
+// Get site URL from environment or use default
+function getSiteUrl(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://talk-to-my-lawyer.com'
+}
+
+function wrapHtml(content: string, unsubscribeUrl?: string): string {
+  const siteUrl = getSiteUrl()
+
   return `
 <!DOCTYPE html>
 <html>
@@ -68,8 +77,11 @@ function wrapHtml(content: string): string {
       ${content}
     </div>
     <div class="footer">
-      <p>Talk-To-My-Lawyer | Professional Legal Letter Services</p>
-      <p>This is an automated message. Please do not reply directly to this email.</p>
+      <p><strong>Talk-To-My-Lawyer</strong> | Professional Legal Letter Services</p>
+      <p>123 Legal Street, Suite 100<br>San Francisco, CA 94102</p>
+      <p><a href="${siteUrl}">${siteUrl}</a></p>
+      ${unsubscribeUrl ? `<div class="unsubscribe"><p><a href="${escapeHtml(unsubscribeUrl)}">Unsubscribe from these emails</a></p></div>` : ''}
+      <p style="margin-top: 15px; color: #999;">This is an automated message. Please do not reply directly to this email.</p>
     </div>
   </div>
 </body>

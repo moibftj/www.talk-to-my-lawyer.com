@@ -46,12 +46,25 @@ export class ResendProvider implements EmailProviderInterface {
     })
 
     try {
-      const emailParams: Record<string, unknown> = {
+      // Build email parameters with proper typing
+      const emailParams: {
+        from: string
+        to: string | string[]
+        subject: string
+        html: string
+        text?: string
+        replyTo?: string | string[]
+        attachments?: Array<{ filename: string; content: string }>
+      } = {
         from,
         to: message.to,
         subject: message.subject,
         html: message.html || '',
-        text: message.text,
+      }
+
+      // Add text version if provided
+      if (message.text) {
+        emailParams.text = message.text
       }
 
       // Add reply-to for better deliverability
