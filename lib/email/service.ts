@@ -76,12 +76,34 @@ class EmailService {
   ): Promise<EmailResult> {
     const { subject, text, html } = renderTemplate(template, data)
 
-    return this.send({
+    // Automatically add reply-to for better deliverability
+    const message: EmailMessage = {
       to,
       subject,
       text,
       html,
-    })
+    }
+
+    // Add reply-to header if EMAIL_REPLY_TO is configured
+    const replyToEmail = process.env.EMAIL_REPLY_TO || process.env.ADMIN_EMAIL
+    if (replyToEmail && !this.isCriticalSecurityEmail(template)) {
+      message.replyTo = replyToEmail
+    }
+
+    return this.send(message)
+  }
+
+  /**
+   * Check if an email template is a critical security email that should not have reply-to
+   */
+  private isCriticalSecurityEmail(template: EmailTemplate): boolean {
+    const securityTemplates: EmailTemplate[] = [
+      'password-reset',
+      'security-alert',
+      'admin-alert',
+      'account-suspended',
+    ]
+    return securityTemplates.includes(template)
   }
 
   async sendWithRetry(
