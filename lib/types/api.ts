@@ -143,7 +143,8 @@ export function isSupabaseSuccess<T>(result: SupabaseResult<T>): result is Supab
   return result.error === null && result.data !== null
 }
 
-// Environment Variable Types
+// Environment Variable Types (deprecated - use @/lib/config instead)
+// Kept for backward compatibility
 export interface EnvConfig {
   NEXT_PUBLIC_SUPABASE_URL: string
   NEXT_PUBLIC_SUPABASE_ANON_KEY: string

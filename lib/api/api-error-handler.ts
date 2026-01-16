@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { ZodError } from 'zod'
+import { isDevelopment } from '@/lib/config/env'
 
 /**
  * Custom error classes for different error types
@@ -71,7 +72,7 @@ export interface ErrorResponse {
  * Handle API errors and return appropriate NextResponse
  */
 export function handleApiError(error: unknown, context?: string): NextResponse {
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  const dev = isDevelopment()
 
   // Log all errors with context
   const errorContext = context ? `[${context}]` : ''
@@ -79,7 +80,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     console.error(`${errorContext} Error:`, {
       name: error.name,
       message: error.message,
-      stack: isDevelopment ? error.stack : undefined,
+      stack: dev ? error.stack : undefined,
     })
   } else {
     console.error(`${errorContext} Unknown error:`, error)
@@ -96,7 +97,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
       response.details = error.details
     }
 
-    if (isDevelopment && error.stack) {
+    if (dev && error.stack) {
       response.stack = error.stack
     }
 
@@ -120,11 +121,11 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
 
   // Handle unknown errors
   const response: ErrorResponse = {
-    error: isDevelopment ? (error as Error).message || 'An unexpected error occurred' : 'Internal server error',
+    error: dev ? (error as Error).message || 'An unexpected error occurred' : 'Internal server error',
     code: 'INTERNAL_ERROR',
   }
 
-  if (isDevelopment && error instanceof Error && error.stack) {
+  if (dev && error instanceof Error && error.stack) {
     response.stack = error.stack
   }
 
