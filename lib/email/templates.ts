@@ -46,11 +46,20 @@ const baseStyles = `
   .header h1 { margin: 0; font-size: 24px; }
   .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; }
   .footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+  .footer a { color: #1a1a2e; text-decoration: underline; }
   .button { display: inline-block; background: #1a1a2e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
   .highlight { background: #f0f9ff; padding: 15px; border-left: 4px solid #0284c7; margin: 20px 0; }
+  .unsubscribe { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e0e0; }
 `
 
-function wrapHtml(content: string): string {
+// Get site URL from environment or use default
+function getSiteUrl(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://talk-to-my-lawyer.com'
+}
+
+function wrapHtml(content: string, unsubscribeUrl?: string): string {
+  const siteUrl = getSiteUrl()
+
   return `
 <!DOCTYPE html>
 <html>
@@ -68,8 +77,11 @@ function wrapHtml(content: string): string {
       ${content}
     </div>
     <div class="footer">
-      <p>Talk-To-My-Lawyer | Professional Legal Letter Services</p>
-      <p>This is an automated message. Please do not reply directly to this email.</p>
+      <p><strong>Talk-To-My-Lawyer</strong> | Professional Legal Letter Services</p>
+      <p>123 Legal Street, Suite 100<br>San Francisco, CA 94102</p>
+      <p><a href="${siteUrl}">${siteUrl}</a></p>
+      ${unsubscribeUrl ? `<div class="unsubscribe"><p><a href="${escapeHtml(unsubscribeUrl)}">Unsubscribe from these emails</a></p></div>` : ''}
+      <p style="margin-top: 15px; color: #999;">This is an automated message. Please do not reply directly to this email.</p>
     </div>
   </div>
 </body>
@@ -109,7 +121,7 @@ The Talk-To-My-Lawyer Team
       <p><small>If you didn't create an account with us, you can safely ignore this email. This link will expire in 24 hours.</small></p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   welcome: (data) => ({
@@ -153,7 +165,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'password-reset': (data) => ({
@@ -183,7 +195,7 @@ The Talk-To-My-Lawyer Team
       <p><small>If you didn't request this, you can safely ignore this email. This link will expire in 1 hour.</small></p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'letter-approved': (data) => ({
@@ -223,7 +235,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'letter-rejected': (data) => ({
@@ -258,7 +270,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'commission-earned': (data) => ({
@@ -292,7 +304,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'subscription-confirmation': (data) => ({
@@ -324,7 +336,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'subscription-renewal': (data) => ({
@@ -350,7 +362,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'password-reset-confirmation': (data) => ({
@@ -384,7 +396,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'letter-generated': (data) => ({
@@ -432,7 +444,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'letter-under-review': (data) => ({
@@ -473,7 +485,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'commission-paid': (data) => ({
@@ -511,7 +523,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'subscription-cancelled': (data) => {
@@ -553,7 +565,7 @@ The Talk-To-My-Lawyer Team
         </p>
 
         <p>Thank you for being part of Talk-To-My-Lawyer!</p>
-      `),
+      `, data.unsubscribeUrl,)
     }
   },
 
@@ -609,7 +621,7 @@ The Talk-To-My-Lawyer Team
         <p>If you continue to experience issues, please contact our support team.</p>
 
         <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-      `),
+      `, data.unsubscribeUrl,)
     }
   },
 
@@ -656,7 +668,7 @@ The Talk-To-My-Lawyer Team
       </p>
 
       <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'free-trial-ending': (data) => {
@@ -706,7 +718,7 @@ The Talk-To-My-Lawyer Team
         <p>Upgrade before your trial ends to keep your access.</p>
 
         <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-      `),
+      `, data.unsubscribeUrl,)
     }
   },
 
@@ -748,7 +760,7 @@ The Talk-To-My-Lawyer Team
         </p>
 
         <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-      `),
+      `, data.unsubscribeUrl,)
     }
   },
 
@@ -782,7 +794,7 @@ The Talk-To-My-Lawyer Team
       <p>Please review this alert immediately and take appropriate action.</p>
 
       <p>Best regards,<br>Talk-To-My-Lawyer Security Team</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 
   'system-maintenance': (data) => {
@@ -825,7 +837,7 @@ The Talk-To-My-Lawyer Team
         <p>Status updates will be available in your dashboard.</p>
 
         <p>Best regards,<br>The Talk-To-My-Lawyer Team</p>
-      `),
+      `, data.unsubscribeUrl,)
     }
   },
   'admin-alert': (data) => ({
@@ -857,7 +869,7 @@ The Talk-To-My-Lawyer Team
       <p>Please review and take appropriate action.</p>
 
       <p>- Talk-To-My-Lawyer System</p>
-    `),
+    `, data.unsubscribeUrl,)
   }),
 }
 
