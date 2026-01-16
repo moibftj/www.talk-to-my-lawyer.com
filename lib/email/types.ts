@@ -86,5 +86,6 @@ export interface TemplateData {
   trialDaysRemaining?: number
   completedSteps?: number
   totalSteps?: number
+  unsubscribeUrl?: string
   [key: string]: unknown
 }
