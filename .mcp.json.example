@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "github-search": {
+      "command": "node",
+      "args": ["node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    },
+    "filesystem": {
+      "command": "node",
+      "args": ["node_modules/@modelcontextprotocol/server-filesystem/dist/index.js"],
+      "env": {
+        "FILE_SEARCH_ROOT": "/workspaces/www.talk-to-my-lawyer.com"
+      }
+    }
+  },
+  "repository": {
+    "name": "talk-to-my-lawyer",
+    "owner": "moizjmj-pk",
+    "url": "https://github.com/moizjmj-pk/talk-to-my-lawyer.git"
+  },
+  "cacheStrategy": {
+    "enabled": true,
+    "ttl": 3600,
+    "paths": [
+      "app/api/**/*.ts",
+      "lib/**/*.ts",
+      "lib/database.types.ts",
+      "package.json",
+      "tsconfig.json"
+    ]
+  },
+  "agents": [
+    {
+      "name": "TTML Architect",
+      "config": "ttml-architect.agent.md",
+      "capabilities": ["architecture-review", "code-analysis", "security-audit", "performance-optimization"]
+    },
+    {
+      "name": "MCP Manager",
+      "config": "mcp-manager.agent.md",
+      "capabilities": ["code-search", "repository-analysis", "tool-coordination", "agent-orchestration"]
+    }
+  ]
+}

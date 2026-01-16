@@ -9,7 +9,9 @@ export async function GET(request: NextRequest) {
     // Apply rate limiting for read-heavy endpoint
     const rateLimitResponse = await safeApplyRateLimit(request, apiRateLimit, ...getRateLimitTuple('API_READ'))
     if (rateLimitResponse) return rateLimitResponse
-
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
     const { user, supabase } = await requireAuth()
 
     // Call check_letter_allowance function

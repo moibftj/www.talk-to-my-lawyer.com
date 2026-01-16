@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { LetterStatus } from '@/lib/database.types'
 
 export type LetterAuditAction =
   | 'created'
@@ -20,16 +21,6 @@ export type LetterAuditAction =
   | 'pdf_generated'
   | 'email_sent'
   | 'generation_failed'
-
-export type LetterStatus =
-  | 'draft'
-  | 'generating'
-  | 'pending_review'
-  | 'under_review'
-  | 'approved'
-  | 'rejected'
-  | 'completed'
-  | 'failed'
 
 export interface LogLetterAuditParams {
   letterId: string
