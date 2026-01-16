@@ -19,6 +19,7 @@ export type LetterAuditAction =
   | 'improved'
   | 'pdf_generated'
   | 'email_sent'
+  | 'generation_failed'
 
 export type LetterStatus =
   | 'draft'

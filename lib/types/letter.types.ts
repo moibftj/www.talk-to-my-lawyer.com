@@ -6,6 +6,9 @@
 // Re-export database types (source of truth from Supabase)
 export type { Letter, LetterStatus, LetterAuditTrail } from '@/lib/database.types'
 
+// Import for use in this file
+import type { LetterStatus } from '@/lib/database.types'
+
 /**
  * Letter type enum - available letter templates
  */
@@ -84,4 +87,15 @@ export interface AdminActionContext {
   adminId: string
   adminEmail?: string
   timestamp: string
+}
+
+/**
+ * Letter generation response
+ */
+export interface LetterGenerationResponse {
+  success: boolean
+  letterId: string
+  status: LetterStatus
+  isFreeTrial?: boolean
+  aiDraft?: string
 }

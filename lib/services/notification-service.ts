@@ -101,14 +101,14 @@ export async function notifyUserLetterRejected(
 }
 
 /**
- * Notify user when letter is ready for download
+ * Notify user when letter is generated
  *
  * @param userEmail - User's email address
  * @param userName - User's name
  * @param letterTitle - Title of the letter
  * @param letterId - ID of the letter
  */
-export async function notifyUserLetterReady(
+export async function notifyUserLetterGenerated(
   userEmail: string,
   userName: string,
   letterTitle: string,
@@ -117,69 +117,41 @@ export async function notifyUserLetterReady(
   const siteUrl = getAppUrl()
 
   try {
-    await queueTemplateEmail('letter-ready', userEmail, {
+    await queueTemplateEmail('letter-generated', userEmail, {
       userName,
       letterTitle,
-      downloadLink: `${siteUrl}/dashboard/letters/${letterId}/pdf`,
       letterLink: `${siteUrl}/dashboard/letters/${letterId}`,
     })
-    console.log('[NotificationService] Ready notification queued for user:', userEmail)
+    console.log('[NotificationService] Generation notification queued for user:', userEmail)
   } catch (error) {
-    console.error('[NotificationService] Failed to queue ready notification:', error)
+    console.error('[NotificationService] Failed to queue generation notification:', error)
   }
 }
 
 /**
- * Send welcome email to new user
+ * Notify user when letter is under review
  *
  * @param userEmail - User's email address
  * @param userName - User's name
+ * @param letterTitle - Title of the letter
+ * @param letterId - ID of the letter
  */
-export async function notifyUserWelcome(
-  userEmail: string,
-  userName: string
-): Promise<void> {
-  const siteUrl = getAppUrl()
-
-  try {
-    await queueTemplateEmail('welcome', userEmail, {
-      userName,
-      dashboardLink: `${siteUrl}/dashboard`,
-    })
-    console.log('[NotificationService] Welcome email queued for user:', userEmail)
-  } catch (error) {
-    console.error('[NotificationService] Failed to queue welcome email:', error)
-  }
-}
-
-/**
- * Notify user about subscription changes
- *
- * @param userEmail - User's email address
- * @param userName - User's name
- * @param subscriptionDetails - Details about the subscription
- */
-export async function notifyUserSubscriptionUpdate(
+export async function notifyUserLetterUnderReview(
   userEmail: string,
   userName: string,
-  subscriptionDetails: {
-    planName: string
-    status: string
-    creditsRemaining?: number
-  }
+  letterTitle: string,
+  letterId: string
 ): Promise<void> {
   const siteUrl = getAppUrl()
 
   try {
-    await queueTemplateEmail('subscription-update', userEmail, {
+    await queueTemplateEmail('letter-under-review', userEmail, {
       userName,
-      planName: subscriptionDetails.planName,
-      status: subscriptionDetails.status,
-      creditsRemaining: subscriptionDetails.creditsRemaining,
-      dashboardLink: `${siteUrl}/dashboard`,
+      letterTitle,
+      letterLink: `${siteUrl}/dashboard/letters/${letterId}`,
     })
-    console.log('[NotificationService] Subscription update queued for user:', userEmail)
+    console.log('[NotificationService] Review notification queued for user:', userEmail)
   } catch (error) {
-    console.error('[NotificationService] Failed to queue subscription update:', error)
+    console.error('[NotificationService] Failed to queue review notification:', error)
   }
 }

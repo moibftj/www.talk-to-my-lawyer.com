@@ -112,7 +112,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
       details: error.issues,
     }
 
-    if (isDevelopment) {
+    if (dev) {
       response.stack = error.stack
     }
 

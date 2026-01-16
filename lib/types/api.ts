@@ -52,7 +52,8 @@ export interface RouteContext<TParams = Record<string, string>> {
   params: TParams
 }
 
-// Letter Generation Types
+// Letter Generation Types (deprecated - use lib/types/letter.types instead)
+// Kept for backward compatibility
 export interface LetterGenerationRequest {
   recipientName: string
   recipientAddress: string
@@ -60,12 +61,6 @@ export interface LetterGenerationRequest {
   tone: 'formal' | 'friendly' | 'urgent'
   content: string
   additionalDetails?: string
-}
-
-export interface LetterGenerationResponse {
-  letterId: string
-  status: LetterStatus
-  aiDraft: string
 }
 
 // Admin Review Types

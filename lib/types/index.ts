@@ -25,7 +25,6 @@ export type {
   PaginatedResponse,
   RouteContext,
   LetterGenerationRequest,
-  LetterGenerationResponse,
   AdminReviewRequest,
   AdminReviewResponse,
   AuthUser,
@@ -50,6 +49,7 @@ export type {
   DraftSaveRequest,
   LetterAllowance,
   AdminActionContext,
+  LetterGenerationResponse,
 } from './letter.types'
 
 // Re-export constants
