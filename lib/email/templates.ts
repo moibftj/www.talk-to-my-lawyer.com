@@ -109,7 +109,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Confirm Your Email Address</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -146,7 +145,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Welcome, ${escapeHtml(data.userName || 'there')}!</h2>
       <p>Thank you for signing up for Talk-To-My-Lawyer. You now have access to professional legal letter generation services with attorney review.</p>
 
@@ -187,7 +185,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Password Reset Request</h2>
       <p>We received a request to reset your password. Click the button below to create a new password:</p>
 
@@ -219,7 +216,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Your Letter Has Been Approved!</h2>
       <p>Good news, ${escapeHtml(data.userName || 'there')}!</p>
 
@@ -259,7 +255,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Your Letter Needs Revision</h2>
       <p>Hello ${escapeHtml(data.userName || 'there')},</p>
 
@@ -295,7 +290,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Commission Earned!</h2>
       <p>Congratulations, ${escapeHtml(data.userName || 'there')}!</p>
 
@@ -328,7 +322,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Subscription Confirmed!</h2>
       <p>Thank you for your subscription, ${escapeHtml(data.userName || 'there')}!</p>
 
@@ -359,7 +352,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Subscription Renewal Reminder</h2>
       <p>Hello ${escapeHtml(data.userName || 'there')},</p>
 
@@ -390,7 +382,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Password Successfully Reset</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -431,7 +422,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Your Legal Letter is Ready for Review!</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -478,7 +468,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Your Letter is Under Review</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -518,7 +507,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Commission Paid!</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -561,7 +549,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
       `.trim(),
       html: wrapHtml(`
-      ${content}
         <h2>Subscription Cancelled</h2>
         <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -610,7 +597,6 @@ Best regards,
 The Talk-To-My-Lawyer Team
       `.trim(),
       html: wrapHtml(`
-      ${content}
         <h2>Payment Failed</h2>
         <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -661,7 +647,6 @@ The Talk-To-My-Lawyer Team
     The Talk-To-My-Lawyer Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>Account Suspended</h2>
       <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -711,7 +696,6 @@ The Talk-To-My-Lawyer Team
       The Talk-To-My-Lawyer Team
       `.trim(),
       html: wrapHtml(`
-      ${content}
         <h2>Free Trial Ending Soon</h2>
         <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -761,7 +745,6 @@ The Talk-To-My-Lawyer Team
         The Talk-To-My-Lawyer Team
       `.trim(),
       html: wrapHtml(`
-      ${content}
         <h2>Welcome Aboard! 🎉</h2>
         <p>Hi ${escapeHtml(data.userName || 'there')},</p>
 
@@ -796,7 +779,6 @@ The Talk-To-My-Lawyer Team
     Talk-To-My-Lawyer Security Team
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>⚠️ Security Alert</h2>
 
       <div class="highlight" style="border-left: 4px solid #dc2626; background: #fef2f2;">
@@ -837,7 +819,6 @@ The Talk-To-My-Lawyer Team
         The Talk-To-My-Lawyer Team
       `.trim(),
       html: wrapHtml(`
-      ${content}
         <h2>🔧 Scheduled Maintenance</h2>
 
         <p>We'll be performing scheduled maintenance for approximately <strong>${escapeHtml(duration)}</strong>.</p>
@@ -875,7 +856,6 @@ The Talk-To-My-Lawyer Team
       - Talk-To-My-Lawyer System
     `.trim(),
     html: wrapHtml(`
-      ${content}
       <h2>⚠️ Admin Alert</h2>
 
       <div class="highlight">
