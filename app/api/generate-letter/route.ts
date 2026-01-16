@@ -14,7 +14,7 @@ import { letterGenerationRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-
 import { validateLetterGenerationRequest } from '@/lib/validation/letter-schema'
 import { successResponse, errorResponses, handleApiError } from '@/lib/api/api-error-handler'
 import { requireSubscriber } from '@/lib/auth/authenticate-user'
-import { openaiConfig } from '@/lib/config'
+import { openaiConfig, getRateLimitTuple } from '@/lib/config'
 import {
   checkAndDeductAllowance,
   refundLetterAllowance,
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     recordSpanEvent('letter_generation_started')
 
     // 1. Apply rate limiting
-    const rateLimitResponse = await safeApplyRateLimit(request, letterGenerationRateLimit, 5, "1 h")
+    const rateLimitResponse = await safeApplyRateLimit(request, letterGenerationRateLimit, ...getRateLimitTuple('LETTER_GENERATE'))
     if (rateLimitResponse) {
       recordSpanEvent('rate_limit_exceeded')
       span.setStatus({
