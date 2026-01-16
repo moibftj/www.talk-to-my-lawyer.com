@@ -30,7 +30,7 @@ export interface LetterWithProfile {
   user_id: string
   letter_type: LetterType | string | null
   title: string
-  status: string
+  status: LetterStatus
   intake_data: Record<string, unknown> | null
   ai_draft_content: string | null
   final_content: string | null
