@@ -95,8 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get pending emails using RPC function with batch size
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: emails, error: fetchError } = await (supabase as any).rpc(
+    const { data: emails, error: fetchError } = await supabase.rpc(
       "get_pending_emails",
       { p_limit: batchSize },
     );
