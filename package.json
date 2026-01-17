@@ -137,7 +137,6 @@
     "@supabase/ssr": "^0.8.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^25.0.3",
-    "@types/nodemailer": "^7.0.4",
     "@types/react": "^18",
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.9.0",
