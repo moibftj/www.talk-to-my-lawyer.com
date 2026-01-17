@@ -25,7 +25,7 @@ AI-powered legal letter generation platform with mandatory attorney review. Subs
 3. **Employees never see letter content** - They only see coupon stats and commissions
 4. **Respect RLS** - Never disable Row Level Security; all DB access respects role scoping
 5. **Do not leak secrets** - Never log env var values; refer to names like `OPENAI_API_KEY` only
-6. **Use pnpm exclusively** - Never add npm/yarn lockfiles (`packageManager=pnpm@10.27.0`)
+6. **Use pnpm exclusively** - Never add npm/yarn lockfiles (`packageManager=pnpm@10.28.0`)
 
 ## Architecture Patterns
 
