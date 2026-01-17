@@ -8,20 +8,13 @@ import {
   requireAdminAuth,
   requireSuperAdminAuth,
   requireAttorneyAdminAccess,
-  getAdminSession
+  getAdminSession,
+  isSuperAdmin as checkIsSuperAdmin
 } from '@/lib/auth/admin-session'
 import { validateAdminRequest, generateAdminCSRF } from '@/lib/security/csrf'
 import { sanitizeString } from '@/lib/security/input-sanitizer'
 import { queueTemplateEmail } from '@/lib/email/service'
 import type { EmailTemplate } from '@/lib/email/types'
-
-/**
- * Check if the current admin is a super admin
- */
-async function isSuperAdmin(): Promise<boolean> {
-  const session = await getAdminSession()
-  return session?.role === 'super_admin'
-}
 
 /**
  * Common authentication and validation for admin letter review routes
@@ -70,7 +63,7 @@ export async function validateLetterStatusTransition(
     )
   }
 
-  const superAdmin = await isSuperAdmin()
+  const superAdmin = await checkIsSuperAdmin()
 
   // Super admin can perform any action on any letter
   if (superAdmin) {
