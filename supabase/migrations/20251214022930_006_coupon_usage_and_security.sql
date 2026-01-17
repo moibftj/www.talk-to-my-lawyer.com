@@ -143,6 +143,7 @@ CREATE POLICY "System can insert security events"
     TO authenticated
     WITH CHECK (true);
 
+DROP FUNCTION IF EXISTS public.log_security_event(UUID, TEXT, INET, TEXT, JSONB);
 CREATE OR REPLACE FUNCTION public.log_security_event(
     p_user_id UUID,
     p_event_type TEXT,
@@ -168,6 +169,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.detect_suspicious_activity(UUID, TEXT);
 CREATE OR REPLACE FUNCTION public.detect_suspicious_activity(p_user_id UUID, action_type TEXT)
 RETURNS BOOLEAN AS $$
 DECLARE
