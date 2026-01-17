@@ -3,10 +3,38 @@
 -- automatic employee coupon creation when an employee profile is created.
 -- 
 -- The employee coupon system:
--- 1. Automatically creates a unique 20% discount coupon when an employee signs up
--- 2. Handles role changes (subscriber -> employee) to create coupons
--- 3. Prevents duplicate coupons per employee
--- 4. Supports 5% commission tracking when subscribers use employee coupons
+-- 1. Automatically creates a profile from auth.users metadata on signup
+-- 2. Automatically creates a unique 20% discount coupon when an employee signs up
+-- 3. Handles role changes (subscriber -> employee) to create coupons
+-- 4. Prevents duplicate coupons per employee
+-- 5. Supports 5% commission tracking when subscribers use employee coupons
+
+-- Step 0: Create profile from auth.users metadata (handles signup)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, role, full_name)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.email, ''),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'subscriber'),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email)
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = COALESCE(EXCLUDED.email, profiles.email),
+    full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
+    updated_at = NOW();
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Drop existing trigger if exists, then create
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- Step 1: Ensure employee_coupons table exists with proper structure
 CREATE TABLE IF NOT EXISTS employee_coupons (
