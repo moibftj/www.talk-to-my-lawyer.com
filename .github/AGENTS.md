@@ -71,6 +71,7 @@ This repo implements an end-to-end supervised letter generation workflow where A
 
 Security & audit: prompts, model outputs, and review actions are retained for compliance; RLS and role checks ensure drafts are not exposed to unauthorized employees.
 
+<a id="types-centralized"></a>
 ## Types (centralized)
 
 The canonical type definitions live in `lib/types/` and are re-exported in `types/index.ts` for backward compatibility. Database types are generated in `lib/database.types.ts`.
@@ -131,6 +132,7 @@ The canonical type definitions live in `lib/types/` and are re-exported in `type
 - isSupabaseError
 - isSupabaseSuccess
 
+<a id="api-routes-detailed"></a>
 ## API Routes (detailed)
 
 ### Auth

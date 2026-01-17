@@ -6,9 +6,9 @@ AI legal letter drafting with **mandatory attorney review**.
 
 This repository uses AGENTS.md as the canonical source for AI/agent policies, workflows, and **detailed API routes**. Keep this file short to avoid drift.
 
-- Canonical policies and workflows: [AGENTS.md](AGENTS.md)
-- Detailed routes list: [AGENTS.md](AGENTS.md#api-routes-detailed)
-- Types list: [AGENTS.md](AGENTS.md#types-centralized)
+- Canonical policies and workflows: [AGENTS.md](../AGENTS.md)
+- Detailed routes list: [AGENTS.md](../AGENTS.md#api-routes-detailed)
+- Types list: [AGENTS.md](../AGENTS.md#types-centralized)
 
 ## Repo conventions (summary)
 
