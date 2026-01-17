@@ -1,18 +1,21 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { SubscriptionModal } from "@/components/subscription-modal"
-import { GenerateButton } from "@/components/generate-button"
-import { GenerationTrackerModal, type LetterStatus } from "@/components/generation-tracker-modal"
-import { FileUpload, type UploadedFile } from "@/components/ui/file-upload"
-import { createClient } from "@/lib/supabase/client"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { SubscriptionModal } from "@/components/subscription-modal";
+import { GenerateButton } from "@/components/generate-button";
+import {
+  GenerationTrackerModal,
+  type LetterStatus,
+} from "@/components/generation-tracker-modal";
+import { FileUpload, type UploadedFile } from "@/components/ui/file-upload";
+import { createClient } from "@/lib/supabase/client";
 
 const LETTER_TYPES = [
   {
@@ -20,77 +23,102 @@ const LETTER_TYPES = [
     label: "Demand Letter",
     description: "Formal demand for payment or action",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 9V5H4V9H20ZM20 11H4V19H20V11ZM3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM5 12H8V17H5V12ZM5 6H7V8H5V6ZM9 6H11V8H9V6Z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M20 9V5H4V9H20ZM20 11H4V19H20V11ZM3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM5 12H8V17H5V12ZM5 6H7V8H5V6ZM9 6H11V8H9V6Z" />
       </svg>
-    )
+    ),
   },
   {
     value: "cease_desist",
     label: "Cease and Desist",
     description: "Stop harmful or illegal activity",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
       </svg>
-    )
+    ),
   },
   {
     value: "contract_breach",
     label: "Contract Breach Notice",
     description: "Notify of contract violation",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
       </svg>
-    )
+    ),
   },
   {
     value: "eviction_notice",
     label: "Eviction Notice",
     description: "Legal notice to vacate property",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
       </svg>
-    )
+    ),
   },
   {
     value: "employment_dispute",
     label: "Employment Dispute",
     description: "Workplace issue resolution",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
       </svg>
-    )
+    ),
   },
   {
     value: "consumer_complaint",
     label: "Consumer Complaint",
     description: "Product or service complaint",
     icon: (
-      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+      <svg
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
       </svg>
-    )
+    ),
   },
-]
+];
 
 export default function NewLetterPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [selectedType, setSelectedType] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [aiDraft, setAiDraft] = useState("")
-  const [letterId, setLetterId] = useState<string | null>(null)
-  const [isFreeTrial, setIsFreeTrial] = useState(false)
-  const [showPricingOverlay, setShowPricingOverlay] = useState(false)
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
-  const [hasSubscription, setHasSubscription] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
-  const [showTrackerModal, setShowTrackerModal] = useState(false)
-  const [trackerStatus, setTrackerStatus] = useState<LetterStatus>("generating")
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [aiDraft, setAiDraft] = useState("");
+  const [letterId, setLetterId] = useState<string | null>(null);
+  const [isFreeTrial, setIsFreeTrial] = useState(false);
+  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+  const [showTrackerModal, setShowTrackerModal] = useState(false);
+  const [trackerStatus, setTrackerStatus] =
+    useState<LetterStatus>("generating");
   const [formData, setFormData] = useState({
     senderName: "",
     senderAddress: "",
@@ -102,88 +130,92 @@ export default function NewLetterPage() {
     deadlineDate: "",
     incidentDate: "",
     supportingDocuments: "",
-  })
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  });
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
   useEffect(() => {
-    checkSubscription()
-  }, [])
+    checkSubscription();
+  }, []);
 
   const checkSubscription = async () => {
-    setIsChecking(true)
+    setIsChecking(true);
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (!user) {
-        setIsChecking(false)
-        return
+        setIsChecking(false);
+        return;
       }
 
       // Check if user has generated any letters before (Free Trial Check)
       const { count } = await supabase
         .from("letters")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("user_id", user.id);
 
-      const isFreeTrial = (count || 0) === 0
+      const isFreeTrial = (count || 0) === 0;
 
       // If free trial, user can generate without subscription
       if (isFreeTrial) {
-        setHasSubscription(true)
-        setIsChecking(false)
-        return
+        setHasSubscription(true);
+        setIsChecking(false);
+        return;
       }
 
       // Check for active subscription with credits
       const { data: subscriptions, error } = await supabase
-        .from('subscriptions')
-        .select('credits_remaining, status')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .from("subscriptions")
+        .select("credits_remaining, status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
       if (error) {
-        console.error('Error fetching subscription:', error)
-        setHasSubscription(false)
-        return
+        console.error("Error fetching subscription:", error);
+        setHasSubscription(false);
+        return;
       }
 
-      const subscription = subscriptions?.[0]
-      setHasSubscription(!!(subscription && subscription.credits_remaining > 0))
+      const subscription = subscriptions?.[0];
+      setHasSubscription(
+        !!(subscription && subscription.credits_remaining > 0),
+      );
     } catch (error) {
-      console.error('Error checking subscription:', error)
-      setHasSubscription(false)
+      console.error("Error checking subscription:", error);
+      setHasSubscription(false);
     } finally {
-      setIsChecking(false)
+      setIsChecking(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Check if user has subscription before generating
     if (!hasSubscription) {
-      setShowSubscriptionModal(true)
-      return
+      setShowSubscriptionModal(true);
+      return;
     }
 
-    setLoading(true)
-    setError(null)
-    setShowTrackerModal(true)
-    setTrackerStatus("generating")
+    setLoading(true);
+    setError(null);
+    setShowTrackerModal(true);
+    setTrackerStatus("generating");
 
     try {
       // Prepare uploaded files data for the API
       const attachedFiles = uploadedFiles
-        .filter(f => f.status === "success")
-        .map(f => ({
+        .filter((f) => f.status === "success")
+        .map((f) => ({
           name: f.name,
           type: f.type,
           size: f.size,
           url: f.url || undefined,
-        }))
+        }));
 
       const intakeData = {
         senderName: formData.senderName,
@@ -192,57 +224,82 @@ export default function NewLetterPage() {
         recipientAddress: formData.recipientAddress,
         issueDescription: formData.issueDescription,
         desiredOutcome: formData.desiredOutcome,
-        amountDemanded: formData.amountDemanded ? Number(formData.amountDemanded) : undefined,
+        amountDemanded: formData.amountDemanded
+          ? Number(formData.amountDemanded)
+          : undefined,
         deadlineDate: formData.deadlineDate || undefined,
         incidentDate: formData.incidentDate || undefined,
         additionalDetails: formData.supportingDocuments || undefined,
         attachedFiles: attachedFiles.length > 0 ? attachedFiles : undefined,
-      }
+      };
 
       const requestBody = {
         letterType: selectedType,
         intakeData,
-      }
+      };
 
       const response = await fetch("/api/generate-letter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        if (errorData.needsSubscription) {
-          setShowTrackerModal(false)
-          router.push("/dashboard/subscription")
-          return
+        const errorData = await response.json();
+        if (
+          errorData.needsSubscription ||
+          errorData.details?.needsSubscription
+        ) {
+          setShowTrackerModal(false);
+          router.push("/dashboard/subscription");
+          return;
         }
         // Show detailed validation errors if available
-        const errorMessage = errorData.details
-          ? `${errorData.error}: ${errorData.details.join(', ')}`
-          : errorData.error || "Failed to generate letter"
-        throw new Error(errorMessage)
+        let errorMessage = errorData.error || "Failed to generate letter";
+        if (errorData.details) {
+          // Handle both array and string details
+          if (Array.isArray(errorData.details)) {
+            errorMessage = `${errorData.error}: ${errorData.details.join(", ")}`;
+          } else if (typeof errorData.details === "string") {
+            errorMessage = `${errorData.error}: ${errorData.details}`;
+          } else if (typeof errorData.details === "object") {
+            // Handle Zod validation errors which have an array of issues
+            const issues = errorData.details as Array<{
+              message?: string;
+              path?: string[];
+            }>;
+            if (issues.length > 0 && issues[0].message) {
+              errorMessage = `${errorData.error}: ${issues.map((i) => i.message).join(", ")}`;
+            }
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      const { letterId: newLetterId, aiDraft: draft, isFreeTrial: freeTrialFlag, status } = await response.json()
-      setLetterId(newLetterId)
-      setAiDraft(draft || "")
-      setIsFreeTrial(!!freeTrialFlag)
-      setShowPricingOverlay(!!freeTrialFlag)
+      const {
+        letterId: newLetterId,
+        aiDraft: draft,
+        isFreeTrial: freeTrialFlag,
+        status,
+      } = await response.json();
+      setLetterId(newLetterId);
+      setAiDraft(draft || "");
+      setIsFreeTrial(!!freeTrialFlag);
+      setShowPricingOverlay(!!freeTrialFlag);
       if (status) {
-        setTrackerStatus(status as LetterStatus)
+        setTrackerStatus(status as LetterStatus);
       }
 
       // Automatically take the user to the letter status page (now queued for admin review)
-      router.push(`/dashboard/letters/${newLetterId}?submitted=1`)
+      router.push(`/dashboard/letters/${newLetterId}?submitted=1`);
     } catch (err: any) {
-      console.error("[v0] Letter creation error:", err)
-      setError(err.message || "Failed to create letter")
-      setShowTrackerModal(false)
+      console.error("[v0] Letter creation error:", err);
+      setError(err.message || "Failed to create letter");
+      setShowTrackerModal(false);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -256,18 +313,27 @@ export default function NewLetterPage() {
         onClose={() => setShowSubscriptionModal(false)}
         message="To generate and submit attorney drafts, please choose a subscription plan:"
       />
-      <h1 className="text-3xl font-bold text-foreground mb-8">Create New Letter</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">
+        Create New Letter
+      </h1>
       {!selectedType ? (
         <div className="bg-card rounded-lg shadow-sm border p-6">
-          <h2 className="text-2xl font-bold mb-8 text-center text-slate-900">Select Letter Type</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center text-slate-900">
+            Select Letter Type
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {LETTER_TYPES.map((type) => {
-              const cardClass = type.value.includes('demand') ? 'demand' :
-                               type.value.includes('cease') ? 'cease' :
-                               type.value.includes('contract') ? 'contract' :
-                               type.value.includes('eviction') ? 'eviction' :
-                               type.value.includes('employment') ? 'employment' :
-                               'consumer';
+              const cardClass = type.value.includes("demand")
+                ? "demand"
+                : type.value.includes("cease")
+                  ? "cease"
+                  : type.value.includes("contract")
+                    ? "contract"
+                    : type.value.includes("eviction")
+                      ? "eviction"
+                      : type.value.includes("employment")
+                        ? "employment"
+                        : "consumer";
 
               return (
                 <button
@@ -289,7 +355,9 @@ export default function NewLetterPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-card rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">{LETTER_TYPES.find((t) => t.value === selectedType)?.label}</h2>
+              <h2 className="text-xl font-semibold">
+                {LETTER_TYPES.find((t) => t.value === selectedType)?.label}
+              </h2>
               <button
                 type="button"
                 onClick={() => setSelectedType("")}
@@ -306,7 +374,9 @@ export default function NewLetterPage() {
                   <Input
                     id="senderName"
                     value={formData.senderName}
-                    onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, senderName: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -315,7 +385,12 @@ export default function NewLetterPage() {
                   <Input
                     id="recipientName"
                     value={formData.recipientName}
-                    onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        recipientName: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -327,7 +402,9 @@ export default function NewLetterPage() {
                   id="senderAddress"
                   rows={3}
                   value={formData.senderAddress}
-                  onChange={(e) => setFormData({ ...formData, senderAddress: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, senderAddress: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -338,7 +415,12 @@ export default function NewLetterPage() {
                   id="recipientAddress"
                   rows={3}
                   value={formData.recipientAddress}
-                  onChange={(e) => setFormData({ ...formData, recipientAddress: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recipientAddress: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -350,7 +432,12 @@ export default function NewLetterPage() {
                   rows={6}
                   placeholder="Describe the issue in detail. Include relevant dates, events, and any supporting information..."
                   value={formData.issueDescription}
-                  onChange={(e) => setFormData({ ...formData, issueDescription: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      issueDescription: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -365,7 +452,12 @@ export default function NewLetterPage() {
                       step="0.01"
                       placeholder="0.00"
                       value={formData.amountDemanded}
-                      onChange={(e) => setFormData({ ...formData, amountDemanded: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          amountDemanded: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div>
@@ -374,7 +466,12 @@ export default function NewLetterPage() {
                       id="deadlineDate"
                       type="date"
                       value={formData.deadlineDate}
-                      onChange={(e) => setFormData({ ...formData, deadlineDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          deadlineDate: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -382,12 +479,16 @@ export default function NewLetterPage() {
 
               {selectedType === "cease_desist" && (
                 <div>
-                  <Label htmlFor="deadlineDate">Deadline to Cease Activity</Label>
+                  <Label htmlFor="deadlineDate">
+                    Deadline to Cease Activity
+                  </Label>
                   <Input
                     id="deadlineDate"
                     type="date"
                     value={formData.deadlineDate}
-                    onChange={(e) => setFormData({ ...formData, deadlineDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, deadlineDate: e.target.value })
+                    }
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Specify by when the activity must stop
@@ -395,14 +496,17 @@ export default function NewLetterPage() {
                 </div>
               )}
 
-              {(selectedType === "contract_breach" || selectedType === "employment_dispute") && (
+              {(selectedType === "contract_breach" ||
+                selectedType === "employment_dispute") && (
                 <div>
                   <Label htmlFor="incidentDate">Date of Incident/Breach</Label>
                   <Input
                     id="incidentDate"
                     type="date"
                     value={formData.incidentDate}
-                    onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, incidentDate: e.target.value })
+                    }
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     When did the breach or incident occur?
@@ -418,7 +522,12 @@ export default function NewLetterPage() {
                       id="deadlineDate"
                       type="date"
                       value={formData.deadlineDate}
-                      onChange={(e) => setFormData({ ...formData, deadlineDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          deadlineDate: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div>
@@ -427,7 +536,12 @@ export default function NewLetterPage() {
                       id="incidentDate"
                       type="date"
                       value={formData.incidentDate}
-                      onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          incidentDate: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -435,15 +549,20 @@ export default function NewLetterPage() {
 
               {selectedType === "consumer_complaint" && (
                 <div>
-                  <Label htmlFor="incidentDate">Date of Purchase or Incident</Label>
+                  <Label htmlFor="incidentDate">
+                    Date of Purchase or Incident
+                  </Label>
                   <Input
                     id="incidentDate"
                     type="date"
                     value={formData.incidentDate}
-                    onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, incidentDate: e.target.value })
+                    }
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    When did you purchase the product or when did the issue occur?
+                    When did you purchase the product or when did the issue
+                    occur?
                   </p>
                 </div>
               )}
@@ -455,15 +574,27 @@ export default function NewLetterPage() {
                   rows={3}
                   placeholder="What resolution are you seeking?"
                   value={formData.desiredOutcome}
-                  onChange={(e) => setFormData({ ...formData, desiredOutcome: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, desiredOutcome: e.target.value })
+                  }
                   required
                 />
               </div>
 
               <div>
                 <Label className="flex items-center gap-2 mb-3">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    />
                   </svg>
                   Supporting Documents (Optional)
                 </Label>
@@ -475,12 +606,17 @@ export default function NewLetterPage() {
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Upload contracts, invoices, emails, photos, or any documents that support your case. The AI will review these to create a more accurate draft.
+                  Upload contracts, invoices, emails, photos, or any documents
+                  that support your case. The AI will review these to create a
+                  more accurate draft.
                 </p>
-                
+
                 {/* Optional text field for additional document descriptions */}
                 <div className="mt-3">
-                  <Label htmlFor="supportingDocuments" className="text-xs text-muted-foreground">
+                  <Label
+                    htmlFor="supportingDocuments"
+                    className="text-xs text-muted-foreground"
+                  >
                     Additional notes about your documents (optional)
                   </Label>
                   <Textarea
@@ -488,14 +624,23 @@ export default function NewLetterPage() {
                     rows={2}
                     placeholder="Describe any additional context about your documents..."
                     value={formData.supportingDocuments}
-                    onChange={(e) => setFormData({ ...formData, supportingDocuments: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        supportingDocuments: e.target.value,
+                      })
+                    }
                     className="mt-1"
                   />
                 </div>
               </div>
             </div>
 
-            {error && <div className="mt-4 p-3 text-sm text-destructive bg-destructive/10 rounded-md">{error}</div>}
+            {error && (
+              <div className="mt-4 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                {error}
+              </div>
+            )}
 
             <div className="mt-6 flex items-center justify-center gap-6">
               <GenerateButton
@@ -505,13 +650,18 @@ export default function NewLetterPage() {
                 hasSubscription={hasSubscription}
                 className="flex-1"
               />
-              <Button type="button" variant="outline" onClick={() => router.push("/dashboard/letters")}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/dashboard/letters")}
+              >
                 Cancel
               </Button>
             </div>
             {!hasSubscription && !isChecking && (
               <p className="mt-2 text-sm text-muted-foreground text-center">
-                A subscription is required to generate and submit attorney drafts
+                A subscription is required to generate and submit attorney
+                drafts
               </p>
             )}
           </div>
@@ -522,45 +672,67 @@ export default function NewLetterPage() {
         <div className="mt-10 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-muted-foreground uppercase tracking-tight">Draft Ready</p>
-              <h2 className="text-2xl font-semibold text-foreground">Attorney-generated draft</h2>
+              <p className="text-sm text-muted-foreground uppercase tracking-tight">
+                Draft Ready
+              </p>
+              <h2 className="text-2xl font-semibold text-foreground">
+                Attorney-generated draft
+              </h2>
               <p className="text-sm text-muted-foreground">
-                Review the draft below. You can submit for attorney review after subscribing.
+                Review the draft below. You can submit for attorney review after
+                subscribing.
               </p>
             </div>
             <div className="flex items-center gap-2">
               {letterId && (
-                <Button variant="outline" onClick={() => router.push(`/dashboard/letters/${letterId}`)}>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/dashboard/letters/${letterId}`)}
+                >
                   Open Letter Page
                 </Button>
               )}
-              <Button variant="outline" onClick={() => router.push("/dashboard/subscription")}>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/dashboard/subscription")}
+              >
                 Manage Subscription
               </Button>
             </div>
           </div>
 
           <div className="relative">
-            <div className={`bg-card border rounded-lg p-4 whitespace-pre-wrap leading-relaxed ${showPricingOverlay ? "blur-sm pointer-events-none select-none" : ""}`}>
+            <div
+              className={`bg-card border rounded-lg p-4 whitespace-pre-wrap leading-relaxed ${showPricingOverlay ? "blur-sm pointer-events-none select-none" : ""}`}
+            >
               {aiDraft}
             </div>
 
             {showPricingOverlay && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-white border shadow-xl rounded-lg p-6 max-w-xl w-full space-y-4">
-                  <h3 className="text-xl font-semibold">Unlock attorney review</h3>
+                  <h3 className="text-xl font-semibold">
+                    Unlock attorney review
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Your first draft is free to preview. Subscribe to submit this letter for attorney review and delivery.
+                    Your first draft is free to preview. Subscribe to submit
+                    this letter for attorney review and delivery.
                   </p>
                   <div className="grid gap-3">
                     <div className="border rounded-lg p-3 flex items-center justify-between">
                       <div>
                         <div className="font-semibold">Single Letter</div>
-                        <div className="text-sm text-muted-foreground">One-time review</div>
+                        <div className="text-sm text-muted-foreground">
+                          One-time review
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold">$299</div>
-                        <Button size="sm" className="mt-2" onClick={() => router.push("/dashboard/subscription")}>
+                        <Button
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => router.push("/dashboard/subscription")}
+                        >
                           Choose
                         </Button>
                       </div>
@@ -568,11 +740,17 @@ export default function NewLetterPage() {
                     <div className="border rounded-lg p-3 flex items-center justify-between bg-primary/5">
                       <div>
                         <div className="font-semibold">Monthly</div>
-                        <div className="text-sm text-muted-foreground">4 letters per month</div>
+                        <div className="text-sm text-muted-foreground">
+                          4 letters per month
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold">$299/mo</div>
-                        <Button size="sm" className="mt-2" onClick={() => router.push("/dashboard/subscription")}>
+                        <Button
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => router.push("/dashboard/subscription")}
+                        >
                           Choose
                         </Button>
                       </div>
@@ -580,18 +758,27 @@ export default function NewLetterPage() {
                     <div className="border rounded-lg p-3 flex items-center justify-between">
                       <div>
                         <div className="font-semibold">Yearly</div>
-                        <div className="text-sm text-muted-foreground">8 letters per year</div>
+                        <div className="text-sm text-muted-foreground">
+                          8 letters per year
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold">$599/yr</div>
-                        <Button size="sm" className="mt-2" onClick={() => router.push("/dashboard/subscription")}>
+                        <Button
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => router.push("/dashboard/subscription")}
+                        >
                           Choose
                         </Button>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Button variant="secondary" onClick={() => setShowPricingOverlay(false)}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setShowPricingOverlay(false)}
+                    >
                       Preview letter draft
                     </Button>
                     <div className="text-sm text-muted-foreground">
@@ -607,10 +794,14 @@ export default function NewLetterPage() {
             <div className="flex items-center justify-between bg-muted/50 border rounded-lg p-4">
               <div>
                 <p className="font-medium text-foreground">Ready to submit?</p>
-                <p className="text-sm text-muted-foreground">Send this draft to our attorneys for review and approval.</p>
+                <p className="text-sm text-muted-foreground">
+                  Send this draft to our attorneys for review and approval.
+                </p>
               </div>
               {letterId && (
-                <Button onClick={() => router.push(`/dashboard/letters/${letterId}`)}>
+                <Button
+                  onClick={() => router.push(`/dashboard/letters/${letterId}`)}
+                >
                   Submit for Attorney Review
                 </Button>
               )}
@@ -619,5 +810,5 @@ export default function NewLetterPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
