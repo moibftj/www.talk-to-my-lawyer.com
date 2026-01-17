@@ -13,9 +13,9 @@ AI legal letter drafting with **mandatory attorney review**.
    - **Attorney Admin:** Can only access the review letter modal without any user information or profile settings visibility.
 
 5. **Respect Supabase RLS.** Never disable Row Level Security.
-5. **Do not log sensitive information.** Avoid logging personal data or secrets.
-6. **Do not leak secrets.** Never log env var values (mention names like `OPENAI_API_KEY` only).
-7. **Use pnpm only.** Do not add npm/yarn lockfiles.
+6. **Do not log sensitive information.** Avoid logging personal data or secrets.
+7. **Do not leak secrets.** Never log env var values (mention names like `OPENAI_API_KEY` only).
+8. **Use pnpm only.** Do not add npm/yarn lockfiles.
 
 ## Commands
 
@@ -42,26 +42,42 @@ pnpm validate-env
 Order: 1) rate limit → 2) auth → 3) role check → 4) validate/sanitize → 5) business logic → 6) consistent response.
 
 ```ts
-import { NextRequest } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { safeApplyRateLimit, apiRateLimit } from "@/lib/rate-limit-redis"
-import { successResponse, errorResponses, handleApiError } from "@/lib/api/api-error-handler"
+import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { safeApplyRateLimit, apiRateLimit } from "@/lib/rate-limit-redis";
+import {
+  successResponse,
+  errorResponses,
+  handleApiError,
+} from "@/lib/api/api-error-handler";
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitResponse = await safeApplyRateLimit(request, apiRateLimit, 100, "1 m")
-    if (rateLimitResponse) return rateLimitResponse
+    const rateLimitResponse = await safeApplyRateLimit(
+      request,
+      apiRateLimit,
+      100,
+      "1 m",
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return errorResponses.unauthorized()
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return errorResponses.unauthorized();
 
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
     // if (profile?.role !== "subscriber") return errorResponses.forbidden("Only subscribers can ...")
 
-    return successResponse({ ok: true })
+    return successResponse({ ok: true });
   } catch (error) {
-    return handleApiError(error, "API")
+    return handleApiError(error, "API");
   }
 }
 ```
@@ -120,6 +136,47 @@ export async function POST(request: NextRequest) {
 - `POST /api/letters/[id]/send-email` — Queue sending a letter by email.
 - `GET /api/letters/[id]/audit` — Fetch a letter’s audit trail.
 
+#### Letter generation flow (end-to-end)
+
+1. **User action (UI):**
+
+- Subscriber fills the letter request form in the dashboard UI and clicks the `Generate` button.
+- The client performs validation and then calls `POST /api/generate-letter` with the form data and the user's auth session.
+
+2. **Server-side (API):**
+
+- The `POST /api/generate-letter` route applies rate-limiting, authenticates the user, validates the request, and checks the user's allowance/credits.
+- The server builds a constrained, auditable prompt from the sanitized form input and user profile data.
+
+3. **AI generation (model):**
+
+- The server invokes the AI model (ChatGPT-4 Turbo) through the provider client, using the curated prompt and strict safety/review constraints.
+- The AI returns a draft letter (structured text and metadata). All prompts and model responses are stored for auditability.
+
+4. **Persist draft & queue review:**
+
+- The draft is stored in the database (letters/drafts) with status `draft` or `awaiting_review`.
+- The system creates an admin/attorney review task (audit log entry + notification). Employee accounts never receive letter content.
+
+5. **Attorney / Admin review:**
+
+- Both **System Admin** and **Attorney Admin** can review drafts via the admin portals (`/secure-admin-gateway` or `/attorney-portal`).
+- Reviewers may **edit**, **approve**, or **reject** (with reason). All edits and actions are recorded in the audit log.
+- Approvals require an explicit admin/attorney action and are auditable.
+
+6. **Post-approval: subscriber access & delivery:**
+
+- Once an admin/attorney approves the letter it is marked `approved` and becomes visible to the subscriber in their "My Letters" area in the dashboard.
+- Subscribers see two actions for approved letters:
+  - **Download PDF:** Download the approved letter as a PDF (`GET /api/letters/[id]/pdf`).
+  - **Send via attorney/system email:** Request that the letter be sent to a recipient via the application's email address; this action uses `POST /api/letters/[id]/send-email` and is queued/audited. The send action is a separate, auditable operation and must respect RLS and review requirements.
+
+7. **Security & audit:**
+
+- All steps are logged in `admin_audit_log` and letter audit tables.
+- Prompts, model outputs, and review actions are retained for compliance and debugging.
+- The system enforces role checks, RLS, and never exposes drafts to unauthorized employees.
+
 ### Admin
 
 - `GET /api/admin/csrf` — Get a CSRF token for admin actions.
@@ -175,13 +232,13 @@ export async function POST(request: NextRequest) {
 - Reliable delivery: enqueue via `lib/email/queue.ts` and process via `POST /api/cron/process-email-queue` (or `/api/admin/email-queue`).
 
 ```ts
-import { sendTemplateEmail } from "@/lib/email/service"
+import { sendTemplateEmail } from "@/lib/email/service";
 
 await sendTemplateEmail("letter-approved", userEmail, {
   userName: "…",
   letterTitle: "…",
   letterLink: "…",
-})
+});
 ```
 
 ## Admin creation
