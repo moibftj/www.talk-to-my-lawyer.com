@@ -41,7 +41,7 @@ Talk-To-My-Lawyer is an AI-powered legal letter generation platform with mandato
 
 ## Non-Negotiable Rules
 
-1. **Use pnpm exclusively** - `packageManager=pnpm@10.27.0`, never add npm/yarn lockfiles
+1. **Use pnpm exclusively** - `packageManager=pnpm@10.28.0`, never add npm/yarn lockfiles
 2. **Always run linting and build** - `pnpm lint` and `CI=1 pnpm build` before delivery
 3. **Only subscribers can generate letters** - Employees and admins must never access letter generation APIs
 4. **Admin review is mandatory** - No "raw AI" letters reach subscribers; every letter requires approval
@@ -105,11 +105,13 @@ talk-to-my-lawyer/
 │   ├── email/                  # Email service providers
 │   ├── security/               # Security and validation
 │   ├── supabase/               # Supabase client configs
+│   ├── types/                  # Canonical TypeScript types
 │   └── validation/             # Input validation schemas
-├── scripts/                    # Database migration scripts (SQL)
-├── supabase/                   # Supabase-specific migrations
+├── scripts/                    # Automation scripts (db migration runner, admin tools)
+├── supabase/                   # Supabase config and SQL migrations
+│   └── migrations/             # Timestamped SQL migrations
 ├── docs/                       # Documentation
-└── types/                      # Shared TypeScript types
+└── types/                      # Backward-compatible type exports
 ```
 
 ### API Route Structure
