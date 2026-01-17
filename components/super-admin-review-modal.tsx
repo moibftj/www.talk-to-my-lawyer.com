@@ -328,8 +328,7 @@ export function SuperAdminReviewModal({ letter }: SuperAdminReviewModalProps) {
             <Button
               onClick={() => setAction('approve')}
               variant={action === 'approve' ? 'default' : 'outline'}
-              className="flex-1"
-              className={action === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''}
+              className={action === 'approve' ? 'bg-green-600 hover:bg-green-700 flex-1' : 'flex-1'}
             >
               Approve Letter
             </Button>
