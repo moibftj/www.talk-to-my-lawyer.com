@@ -9,8 +9,7 @@ export type LetterStatus =
   | "approved"
   | "completed"
   | "rejected"
-  | "failed"
-  ;
+  | "failed";
 
 export type SubscriptionStatus =
   | "active"
