@@ -100,20 +100,19 @@ export async function POST(request: NextRequest) {
     // Use service role client for profile creation (elevated permissions)
     const serviceClient = getServiceRoleClient();
 
+    const profileInsert = {
+      id: user.id,
+      email: email.toLowerCase().trim(),
+      role: requestedRole,
+      full_name: fullName.trim(),
+    };
+
     const { data: profileData, error: profileError } = await serviceClient
       .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          email: email.toLowerCase().trim(),
-          role: requestedRole,
-          full_name: fullName.trim(),
-        } as Record<string, unknown>,
-        {
-          onConflict: "id",
-          ignoreDuplicates: false,
-        },
-      )
+      .upsert(profileInsert, {
+        onConflict: "id",
+        ignoreDuplicates: false,
+      })
       .select()
       .single();
 
