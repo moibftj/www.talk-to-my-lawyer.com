@@ -1,19 +1,36 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import {
   User,
   Users,
@@ -39,95 +56,97 @@ import {
   Mail,
   Zap,
   Clock,
-} from 'lucide-react'
-import jsPDF from 'jspdf'
-import Link from 'next/link'
-import { DEFAULT_LOGO_ALT, DEFAULT_LOGO_SRC, LETTER_TYPES, SUBSCRIPTION_PLANS } from '@/lib/constants'
+} from "lucide-react";
+import jsPDF from "jspdf";
+import Link from "next/link";
+import {
+  DEFAULT_LOGO_ALT,
+  DEFAULT_LOGO_SRC,
+  LETTER_TYPES,
+  SUBSCRIPTION_PLANS,
+} from "@/lib/constants";
+import type { Profile } from "@/lib/database.types";
 
-type Profile = {
-  id: string
-  full_name: string | null
-  role: string
-  email: string
-}
+// Use subset of Profile fields for UI
+type UIProfile = Pick<Profile, "id" | "full_name" | "role" | "email">;
 
 export default function NewLandingPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<UIProfile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px',
-    }
+      rootMargin: "0px 0px -50px 0px",
+    };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('in-view')
+          entry.target.classList.add("in-view");
         }
-      })
-    }, observerOptions)
+      });
+    }, observerOptions);
 
-    const revealElements = document.querySelectorAll('.scroll-reveal')
-    revealElements.forEach((el) => observer.observe(el))
+    const revealElements = document.querySelectorAll(".scroll-reveal");
+    revealElements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect()
-  }, [user])
+    return () => observer.disconnect();
+  }, [user]);
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
   const checkAuth = async () => {
-    const supabase = createClient()
+    const supabase = createClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     if (user) {
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
       if (profile) {
-        setUser(user)
-        setProfile(profile as Profile)
+        setUser(user);
+        setProfile(profile as UIProfile);
       }
     }
-  }
+  };
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    toast.success('Logged out successfully')
-    router.push('/')
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    toast.success("Logged out successfully");
+    router.push("/");
+  };
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+        behavior: "smooth",
+        block: "start",
+      });
     }
-  }
+  };
 
   if (!user) {
     return (
@@ -135,7 +154,7 @@ export default function NewLandingPage() {
         {/* Navigation Header */}
         <nav
           className={`glass-card backdrop-blur-lg border-b border-blue-200 sticky top-0 z-50 transition-all duration-300 ${
-            isScrolled ? 'bg-white/95 shadow-lg' : 'bg-white/80'
+            isScrolled ? "bg-white/95 shadow-lg" : "bg-white/80"
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,25 +168,30 @@ export default function NewLandingPage() {
                   className="h-10 w-10 rounded-full logo-badge"
                   priority
                 />
-                <span className="text-xl font-bold text-gradient-animated">Talk-To-My-Lawyer</span>
+                <span className="text-xl font-bold text-gradient-animated">
+                  Talk-To-My-Lawyer
+                </span>
               </div>
               <div className="hidden md:flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  onClick={() => scrollToSection('features')}
+                  onClick={() => scrollToSection("features")}
                   className="nav-item text-gray-700 hover:text-blue-600 transition-colors duration-200"
                 >
                   Features
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => scrollToSection("pricing")}
                   className="nav-item text-gray-700 hover:text-blue-600 transition-colors duration-200"
                 >
                   Pricing
                 </Button>
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-blue-600">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
                     Sign In
                   </Button>
                 </Link>
@@ -187,14 +211,15 @@ export default function NewLandingPage() {
           <div className="max-w-7xl mx-auto text-center">
             <div className="text-center mb-16 scroll-reveal">
               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient-animated">
-                Need a Lawyer&apos;s <span className="text-gray-900">Voice</span>
+                Need a Lawyer&apos;s{" "}
+                <span className="text-gray-900">Voice</span>
                 <br />
                 <span className="text-gray-900">Without the Legal Bill?</span>
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in stagger-2">
-                Get professional, lawyer-drafted letters for tenant disputes, debt collection, HR
-                issues, and more. Resolve conflicts quickly and affordably with the power of legal
-                communication.
+                Get professional, lawyer-drafted letters for tenant disputes,
+                debt collection, HR issues, and more. Resolve conflicts quickly
+                and affordably with the power of legal communication.
               </p>
             </div>
 
@@ -208,7 +233,7 @@ export default function NewLandingPage() {
               </Link>
               <Button
                 variant="outline"
-                onClick={() => scrollToSection('letter-types')}
+                onClick={() => scrollToSection("letter-types")}
                 className="border-blue-300 text-blue-600 hover:bg-blue-50 px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300 btn-enhanced group"
               >
                 <FileText className="h-5 w-5 mr-2 group-hover:rotate-12 transition-transform duration-200" />
@@ -277,11 +302,16 @@ export default function NewLandingPage() {
         <section id="letter-types" className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <Badge className="bg-blue-100 text-blue-600 mb-4">Most Popular</Badge>
-              <h2 className="text-4xl font-bold mb-4 shiny-text">Professional Legal Letters</h2>
+              <Badge className="bg-blue-100 text-blue-600 mb-4">
+                Most Popular
+              </Badge>
+              <h2 className="text-4xl font-bold mb-4 shiny-text">
+                Professional Legal Letters
+              </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Choose from our comprehensive library of lawyer-drafted letter templates. Each
-                letter is customized for your specific situation and reviewed by licensed attorneys.
+                Choose from our comprehensive library of lawyer-drafted letter
+                templates. Each letter is customized for your specific situation
+                and reviewed by licensed attorneys.
               </p>
             </div>
 
@@ -289,45 +319,45 @@ export default function NewLandingPage() {
               {[
                 {
                   icon: Home,
-                  title: 'Tenant Disputes',
-                  desc: 'Security deposits, lease violations, habitability issues, and more',
-                  price: '$299',
-                  color: 'blue',
+                  title: "Tenant Disputes",
+                  desc: "Security deposits, lease violations, habitability issues, and more",
+                  price: "$299",
+                  color: "blue",
                 },
                 {
                   icon: Briefcase,
-                  title: 'HR & Employment',
-                  desc: 'Workplace harassment, wrongful termination, wage disputes',
-                  price: '$299',
-                  color: 'green',
+                  title: "HR & Employment",
+                  desc: "Workplace harassment, wrongful termination, wage disputes",
+                  price: "$299",
+                  color: "green",
                 },
                 {
                   icon: AlertCircle,
-                  title: 'Debt Collection',
-                  desc: 'Collect money owed to you from clients, customers, or businesses',
-                  price: '$299',
-                  color: 'red',
+                  title: "Debt Collection",
+                  desc: "Collect money owed to you from clients, customers, or businesses",
+                  price: "$299",
+                  color: "red",
                 },
                 {
                   icon: Users,
-                  title: 'Personal Disputes',
-                  desc: 'Neighbor disputes, contract breaches, personal injury claims',
-                  price: '$299',
-                  color: 'blue',
+                  title: "Personal Disputes",
+                  desc: "Neighbor disputes, contract breaches, personal injury claims",
+                  price: "$299",
+                  color: "blue",
                 },
                 {
                   icon: Building,
-                  title: 'Property Issues',
-                  desc: 'Property damage, boundary disputes, easement issues',
-                  price: '$299',
-                  color: 'blue',
+                  title: "Property Issues",
+                  desc: "Property damage, boundary disputes, easement issues",
+                  price: "$299",
+                  color: "blue",
                 },
                 {
                   icon: Shield,
-                  title: 'Cease & Desist',
-                  desc: 'Stop harassment, defamation, copyright infringement, and more',
-                  price: '$299',
-                  color: 'orange',
+                  title: "Cease & Desist",
+                  desc: "Stop harassment, defamation, copyright infringement, and more",
+                  price: "$299",
+                  color: "orange",
                 },
               ].map((type, index) => (
                 <Card
@@ -345,7 +375,9 @@ export default function NewLandingPage() {
                     <CardTitle className="text-xl font-semibold mb-2 text-gradient-animated">
                       {type.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600 mb-4">{type.desc}</CardDescription>
+                    <CardDescription className="text-gray-600 mb-4">
+                      {type.desc}
+                    </CardDescription>
                     <div className="text-2xl font-bold text-blue-600 glow-text animate-bounce-gentle">
                       Starting at {type.price}
                     </div>
@@ -365,7 +397,10 @@ export default function NewLandingPage() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-50 to-teal-50">
+        <section
+          id="pricing"
+          className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-50 to-teal-50"
+        >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 scroll-reveal">
               <h2 className="text-4xl font-bold mb-4 text-gradient-animated">
@@ -381,7 +416,9 @@ export default function NewLandingPage() {
                 <Card
                   key={plan.planType}
                   className={`glass-card transition-all duration-300 ${
-                    plan.popular ? 'laser-border-blue-enhanced' : 'laser-border-blue'
+                    plan.popular
+                      ? "laser-border-blue-enhanced"
+                      : "laser-border-blue"
                   } animate-slide-up`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
@@ -398,7 +435,9 @@ export default function NewLandingPage() {
                       ${plan.price}
                     </CardDescription>
                     <p className="text-gray-600 text-sm">
-                      {plan.letters === 1 ? 'One-time payment' : `${plan.letters} letters`}
+                      {plan.letters === 1
+                        ? "One-time payment"
+                        : `${plan.letters} letters`}
                     </p>
                   </CardHeader>
                   <CardContent className="text-center relative z-10">
@@ -421,18 +460,18 @@ export default function NewLandingPage() {
               {[
                 {
                   icon: Zap,
-                  title: 'Lightning Fast',
-                  desc: 'Generate professional legal letters in minutes, not hours',
+                  title: "Lightning Fast",
+                  desc: "Generate professional legal letters in minutes, not hours",
                 },
                 {
                   icon: Users,
-                  title: 'Attorney Reviewed',
-                  desc: 'Every letter is reviewed by qualified legal professionals',
+                  title: "Attorney Reviewed",
+                  desc: "Every letter is reviewed by qualified legal professionals",
                 },
                 {
                   icon: Shield,
-                  title: 'Secure & Confidential',
-                  desc: 'Bank-level encryption protects your information',
+                  title: "Secure & Confidential",
+                  desc: "Bank-level encryption protects your information",
                 },
               ].map((feature, index) => (
                 <Card
@@ -446,7 +485,9 @@ export default function NewLandingPage() {
                     <CardTitle className="text-xl font-semibold mb-2 text-gradient-animated">
                       {feature.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600">{feature.desc}</CardDescription>
+                    <CardDescription className="text-gray-600">
+                      {feature.desc}
+                    </CardDescription>
                   </CardHeader>
                 </Card>
               ))}
@@ -461,7 +502,9 @@ export default function NewLandingPage() {
               <div>
                 <div className="flex items-center space-x-3 mb-4">
                   <Scale className="h-10 w-10 text-cyan-400" />
-                  <span className="text-2xl font-bold text-white">Talk-To-My-Lawyer</span>
+                  <span className="text-2xl font-bold text-white">
+                    Talk-To-My-Lawyer
+                  </span>
                 </div>
                 <p className="text-cyan-200 mb-4">
                   Professional legal assistance without the legal bill.
@@ -508,24 +551,24 @@ export default function NewLandingPage() {
           </div>
         </footer>
       </div>
-    )
+    );
   }
 
   // Authenticated user view - redirect to dashboard
-  if (profile?.role === 'subscriber') {
-    router.push('/dashboard')
-    return null
+  if (profile?.role === "subscriber") {
+    router.push("/dashboard");
+    return null;
   }
 
-  if (profile?.role === 'admin') {
-    router.push('/dashboard/admin')
-    return null
+  if (profile?.role === "admin") {
+    router.push("/dashboard/admin");
+    return null;
   }
 
-  if (profile?.role === 'employee') {
-    router.push('/dashboard/commissions')
-    return null
+  if (profile?.role === "employee") {
+    router.push("/dashboard/commissions");
+    return null;
   }
 
-  return null
+  return null;
 }

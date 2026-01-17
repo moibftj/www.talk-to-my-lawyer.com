@@ -1,19 +1,36 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import {
   User,
   Users,
@@ -39,126 +56,141 @@ import {
   Mail,
   Zap,
   Clock,
-} from 'lucide-react'
-import jsPDF from 'jspdf'
-import Link from 'next/link'
-import PricingSection from '@/components/ui/pricing-section'
-import { motion, useInView, useScroll, useTransform, useSpring } from 'motion/react'
-import { useRef } from 'react'
-import { DEFAULT_LOGO_ALT, DEFAULT_LOGO_SRC, LETTER_TYPES, SUBSCRIPTION_PLANS } from '@/lib/constants'
+} from "lucide-react";
+import jsPDF from "jspdf";
+import Link from "next/link";
+import PricingSection from "@/components/ui/pricing-section";
+import {
+  motion,
+  useInView,
+  useScroll,
+  useTransform,
+  useSpring,
+} from "motion/react";
+import { useRef } from "react";
+import {
+  DEFAULT_LOGO_ALT,
+  DEFAULT_LOGO_SRC,
+  LETTER_TYPES,
+  SUBSCRIPTION_PLANS,
+} from "@/lib/constants";
+import type { Profile } from "@/lib/database.types";
 
-
-type Profile = {
-  id: string
-  full_name: string | null
-  role: string
-  email: string
-}
+// Use subset of Profile fields for UI
+type UIProfile = Pick<Profile, "id" | "full_name" | "role" | "email">;
 
 const InclusiveOrbit = () => (
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden>
+  <div
+    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+    aria-hidden
+  >
     <motion.div
       className="aurora-orbit"
       initial={{ rotate: -18, opacity: 0.35 }}
       animate={{ rotate: 342, opacity: [0.35, 0.55, 0.35] }}
-      transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
+      transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
     />
     <motion.div
       className="aurora-orbit aurora-orbit--inner"
       initial={{ rotate: 12, opacity: 0.4 }}
       animate={{ rotate: -348, opacity: [0.4, 0.6, 0.4] }}
-      transition={{ duration: 20, repeat: Infinity, ease: 'linear', delay: 1.2 }}
+      transition={{
+        duration: 20,
+        repeat: Infinity,
+        ease: "linear",
+        delay: 1.2,
+      }}
     />
   </div>
-)
+);
 
 export default function HomePage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<UIProfile | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px',
-    }
+      rootMargin: "0px 0px -50px 0px",
+    };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('in-view')
+          entry.target.classList.add("in-view");
         }
-      })
-    }, observerOptions)
+      });
+    }, observerOptions);
 
-    const revealElements = document.querySelectorAll('.scroll-reveal')
-    revealElements.forEach((el) => observer.observe(el))
+    const revealElements = document.querySelectorAll(".scroll-reveal");
+    revealElements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect()
-  }, [user])
+    return () => observer.disconnect();
+  }, [user]);
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
   const checkAuth = async () => {
-    const supabase = createClient()
+    const supabase = createClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     if (user) {
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
       if (profile) {
-        setUser(user)
-        setProfile(profile as Profile)
+        setUser(user);
+        setProfile(profile as UIProfile);
       }
     }
-  }
+  };
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    toast.success('Logged out successfully')
-    router.push('/')
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    toast.success("Logged out successfully");
+    router.push("/");
+  };
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+        behavior: "smooth",
+        block: "start",
+      });
     }
-  }
+  };
 
   // Authenticated user view - redirect to dashboard (must be before conditional rendering)
   useEffect(() => {
-    if (profile?.role === 'subscriber') {
-      router.push('/dashboard/letters')
-    } else if (profile?.role === 'admin') {
-      router.push('/dashboard/admin/letters')
-    } else if (profile?.role === 'employee') {
-      router.push('/dashboard/commissions')
+    if (profile?.role === "subscriber") {
+      router.push("/dashboard/letters");
+    } else if (profile?.role === "admin") {
+      router.push("/dashboard/admin/letters");
+    } else if (profile?.role === "employee") {
+      router.push("/dashboard/commissions");
     }
-  }, [profile?.role, router])
+  }, [profile?.role, router]);
 
   // Show loading state while redirecting
   if (profile) {
@@ -166,10 +198,12 @@ export default function HomePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg text-muted-foreground">Redirecting to your dashboard...</p>
+          <p className="text-lg text-muted-foreground">
+            Redirecting to your dashboard...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!user) {
@@ -178,7 +212,9 @@ export default function HomePage() {
         {/* Navigation Header */}
         <nav
           className={`glass-card backdrop-blur-lg border-b border-sky-200/60 sticky top-0 z-50 transition-all duration-300 ${
-            isScrolled ? 'bg-white/95 shadow-lg shadow-sky-100/50' : 'bg-white/80'
+            isScrolled
+              ? "bg-white/95 shadow-lg shadow-sky-100/50"
+              : "bg-white/80"
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -192,30 +228,39 @@ export default function HomePage() {
                   className="h-10 w-10 rounded-full logo-badge"
                   priority
                 />
-                <span className="text-xl font-bold text-gradient-animated">Talk-To-My-Lawyer</span>
+                <span className="text-xl font-bold text-gradient-animated">
+                  Talk-To-My-Lawyer
+                </span>
               </div>
               <div className="hidden md:flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  onClick={() => scrollToSection('features')}
+                  onClick={() => scrollToSection("features")}
                   className="nav-item text-gray-700 hover:text-[#199df4] transition-colors duration-200"
                 >
                   Features
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => scrollToSection("pricing")}
                   className="nav-item text-gray-700 hover:text-[#199df4] transition-colors duration-200"
                 >
                   Pricing
                 </Button>
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#199df4]">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-[#199df4]"
+                  >
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button variant="running_border" size="sm" className="glow-enhanced cta-aurora">
+                  <Button
+                    variant="running_border"
+                    size="sm"
+                    className="glow-enhanced cta-aurora"
+                  >
                     <motion.span
                       className="flex items-center"
                       whileHover={{ x: 3 }}
@@ -239,9 +284,10 @@ export default function HomePage() {
             <motion.div
               className="absolute w-[800px] h-[800px] rounded-full opacity-25 blur-3xl morphing-bg"
               style={{
-                background: 'radial-gradient(circle, #199df4 0%, #0d8ae0 40%, #0066cc 100%)',
-                top: '-20%',
-                left: '-10%'
+                background:
+                  "radial-gradient(circle, #199df4 0%, #0d8ae0 40%, #0066cc 100%)",
+                top: "-20%",
+                left: "-10%",
               }}
               animate={{
                 x: [0, 150, -100, 0],
@@ -250,7 +296,7 @@ export default function HomePage() {
               transition={{
                 duration: 40,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
             />
 
@@ -258,9 +304,10 @@ export default function HomePage() {
             <motion.div
               className="absolute w-[600px] h-[600px] rounded-full opacity-20 blur-3xl morphing-bg"
               style={{
-                background: 'radial-gradient(circle, #199df4 0%, #4facfe 50%, #00f2fe 100%)',
-                top: '40%',
-                right: '-10%'
+                background:
+                  "radial-gradient(circle, #199df4 0%, #4facfe 50%, #00f2fe 100%)",
+                top: "40%",
+                right: "-10%",
               }}
               animate={{
                 x: [0, -200, 100, 0],
@@ -270,7 +317,7 @@ export default function HomePage() {
                 duration: 35,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: 5
+                delay: 5,
               }}
             />
 
@@ -312,21 +359,22 @@ export default function HomePage() {
               <motion.h1
                 className="text-5xl md:text-7xl font-bold mb-4"
                 style={{
-                  background: 'linear-gradient(135deg, #0a2540 0%, #199df4 35%, #00d4ff 65%, #0a2540 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  background:
+                    "linear-gradient(135deg, #0a2540 0%, #199df4 35%, #00d4ff 65%, #0a2540 100%)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
                 }}
                 variants={{
-                  hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+                  hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
                   visible: {
                     opacity: 1,
                     y: 0,
-                    filter: 'blur(0px)',
+                    filter: "blur(0px)",
                     transition: {
                       duration: 0.8,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    },
                   },
                 }}
               >
@@ -350,12 +398,12 @@ export default function HomePage() {
                 }}
               >
                 {[
-                  'Breach of Contract',
-                  'Demand for Payment',
-                  'Cease and Desist',
-                  'Pre-Litigation Settlement',
-                  'Debt Collection',
-                  'And more',
+                  "Breach of Contract",
+                  "Demand for Payment",
+                  "Cease and Desist",
+                  "Pre-Litigation Settlement",
+                  "Debt Collection",
+                  "And more",
                 ].map((service, index) => (
                   <motion.span
                     key={service}
@@ -366,10 +414,10 @@ export default function HomePage() {
                         opacity: 1,
                         scale: 1,
                         transition: {
-                          type: 'spring',
+                          type: "spring",
                           stiffness: 200,
                           damping: 15,
-                        }
+                        },
                       },
                     }}
                   >
@@ -388,11 +436,13 @@ export default function HomePage() {
                     transition: {
                       duration: 0.6,
                       delay: 0.5,
-                    }
+                    },
                   },
                 }}
               >
-                Resolve conflicts quickly and affordably — only <span className="text-[#199df4] font-bold">$50 per letter</span>.
+                Resolve conflicts quickly and affordably — only{" "}
+                <span className="text-[#199df4] font-bold">$50 per letter</span>
+                .
               </motion.p>
             </motion.div>
 
@@ -423,12 +473,15 @@ export default function HomePage() {
                       type: "spring",
                       stiffness: 120,
                       damping: 14,
-                    }
+                    },
                   },
                 }}
               >
                 <Link href="/auth/signup">
-                  <Button variant="running_border" className="px-12 py-5 text-lg font-semibold rounded-xl glow-enhanced gpu-accelerated cta-aurora">
+                  <Button
+                    variant="running_border"
+                    className="px-12 py-5 text-lg font-semibold rounded-xl glow-enhanced gpu-accelerated cta-aurora"
+                  >
                     <motion.div
                       className="flex items-center"
                       whileHover={{ x: 5 }}
@@ -454,7 +507,7 @@ export default function HomePage() {
                       stiffness: 120,
                       damping: 14,
                       delay: 0.1,
-                    }
+                    },
                   },
                 }}
               >
@@ -499,9 +552,21 @@ export default function HomePage() {
               }}
             >
               {[
-                { icon: CheckCircle, text: "PDF Download", color: "text-green-500" },
-                { icon: CheckCircle, text: "Up to 48 hours turnaround", color: "text-green-500" },
-                { icon: CheckCircle, text: "Attorney approved", color: "text-green-500" },
+                {
+                  icon: CheckCircle,
+                  text: "PDF Download",
+                  color: "text-green-500",
+                },
+                {
+                  icon: CheckCircle,
+                  text: "Up to 48 hours turnaround",
+                  color: "text-green-500",
+                },
+                {
+                  icon: CheckCircle,
+                  text: "Attorney approved",
+                  color: "text-green-500",
+                },
               ].map((item, index) => (
                 <motion.div
                   key={item.text}
@@ -515,7 +580,7 @@ export default function HomePage() {
                         type: "spring",
                         stiffness: 100,
                         damping: 12,
-                      }
+                      },
                     },
                   }}
                 >
@@ -527,7 +592,7 @@ export default function HomePage() {
                       duration: 2,
                       repeat: Infinity,
                       delay: index * 0.2,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                   >
                     <item.icon className={`h-5 w-5 ${item.color}`} />
@@ -583,10 +648,15 @@ export default function HomePage() {
         <section id="letter-types" className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <Badge className="bg-sky-100 text-[#199df4] mb-4">Most Popular</Badge>
-              <h2 className="text-4xl font-bold mb-4 shiny-text">Professional Legal Letters</h2>
+              <Badge className="bg-sky-100 text-[#199df4] mb-4">
+                Most Popular
+              </Badge>
+              <h2 className="text-4xl font-bold mb-4 shiny-text">
+                Professional Legal Letters
+              </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Custom made letters for your specific situation, sent by lawyer's email.
+                Custom made letters for your specific situation, sent by
+                lawyer's email.
               </p>
             </div>
 
@@ -608,45 +678,45 @@ export default function HomePage() {
               {[
                 {
                   icon: Shield,
-                  title: 'Cease and Desist',
-                  desc: 'Stop harassment, defamation, copyright infringement, and more',
-                  color: 'orange',
-                  gradient: 'from-[#ffa726] to-[#ff9800]',
+                  title: "Cease and Desist",
+                  desc: "Stop harassment, defamation, copyright infringement, and more",
+                  color: "orange",
+                  gradient: "from-[#ffa726] to-[#ff9800]",
                 },
                 {
                   icon: AlertCircle,
-                  title: 'Breach of Contract',
-                  desc: 'Contract violations, non-payment, failure to deliver goods or services',
-                  color: 'red',
-                  gradient: 'from-[#ff6b6b] to-[#ee5a52]',
+                  title: "Breach of Contract",
+                  desc: "Contract violations, non-payment, failure to deliver goods or services",
+                  color: "red",
+                  gradient: "from-[#ff6b6b] to-[#ee5a52]",
                 },
                 {
                   icon: FileText,
-                  title: 'Demand for Payment',
-                  desc: 'Collect money owed to you from clients, customers, or businesses',
-                  color: 'blue',
-                  gradient: 'from-[#199df4] to-[#0d8ae0]',
+                  title: "Demand for Payment",
+                  desc: "Collect money owed to you from clients, customers, or businesses",
+                  color: "blue",
+                  gradient: "from-[#199df4] to-[#0d8ae0]",
                 },
                 {
                   icon: Scale,
-                  title: 'Pre-Litigation Settlement',
-                  desc: 'Settlement demands before filing a lawsuit, negotiate disputes',
-                  color: 'green',
-                  gradient: 'from-[#00c9a7] to-[#00a383]',
+                  title: "Pre-Litigation Settlement",
+                  desc: "Settlement demands before filing a lawsuit, negotiate disputes",
+                  color: "green",
+                  gradient: "from-[#00c9a7] to-[#00a383]",
                 },
                 {
                   icon: Users,
-                  title: 'Debt Collection',
-                  desc: 'Professional debt collection letters for outstanding payments',
-                  color: 'blue',
-                  gradient: 'from-[#4facfe] to-[#199df4]',
+                  title: "Debt Collection",
+                  desc: "Professional debt collection letters for outstanding payments",
+                  color: "blue",
+                  gradient: "from-[#4facfe] to-[#199df4]",
                 },
                 {
                   icon: Briefcase,
-                  title: 'And More',
-                  desc: 'Contact us for any other legal letter needs you may have',
-                  color: 'blue',
-                  gradient: 'from-[#0d8ae0] to-[#0066cc]',
+                  title: "And More",
+                  desc: "Contact us for any other legal letter needs you may have",
+                  color: "blue",
+                  gradient: "from-[#0d8ae0] to-[#0066cc]",
                 },
               ].map((type, index) => (
                 <motion.div
@@ -661,21 +731,23 @@ export default function HomePage() {
                         type: "spring",
                         stiffness: 100,
                         damping: 12,
-                      }
+                      },
                     },
                   }}
                   whileHover={{
                     y: -10,
                     scale: 1.02,
-                    transition: { duration: 0.3 }
+                    transition: { duration: 0.3 },
                   }}
                 >
-                  <Card className={`h-full glass-card card-enhanced hover:shadow-2xl transition-all duration-300 group relative overflow-hidden letter-card-enhanced gpu-accelerated`}>
+                  <Card
+                    className={`h-full glass-card card-enhanced hover:shadow-2xl transition-all duration-300 group relative overflow-hidden letter-card-enhanced gpu-accelerated`}
+                  >
                     {/* Animated background gradient */}
                     <motion.div
                       className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
                       style={{
-                        background: `linear-gradient(135deg, ${type.gradient.replace('from-', '').replace(' to-', ', ')})`,
+                        background: `linear-gradient(135deg, ${type.gradient.replace("from-", "").replace(" to-", ", ")})`,
                       }}
                       animate={{
                         scale: [1, 1.1, 1],
@@ -683,7 +755,7 @@ export default function HomePage() {
                       transition={{
                         duration: 5,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
                     />
 
@@ -692,16 +764,17 @@ export default function HomePage() {
                       <motion.div
                         className="absolute inset-0"
                         style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-                          backgroundSize: '200% 100%'
+                          background:
+                            "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                          backgroundSize: "200% 100%",
                         }}
                         animate={{
-                          backgroundPosition: ['-200% center', '200% center']
+                          backgroundPosition: ["-200% center", "200% center"],
                         }}
                         transition={{
                           duration: 1.5,
                           repeat: Infinity,
-                          ease: "linear"
+                          ease: "linear",
                         }}
                       />
                     </div>
@@ -711,12 +784,12 @@ export default function HomePage() {
                         className={`w-14 h-14 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
                         whileHover={{
                           rotate: [0, -5, 5, 0],
-                          scale: 1.1
+                          scale: 1.1,
                         }}
                         transition={{
                           duration: 0.5,
                           repeat: Infinity,
-                          repeatType: "reverse"
+                          repeatType: "reverse",
                         }}
                       >
                         <type.icon className="h-7 w-7 text-white" />
@@ -724,7 +797,9 @@ export default function HomePage() {
                       <CardTitle className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-[#199df4] transition-colors duration-300">
                         {type.title}
                       </CardTitle>
-                      <CardDescription className="text-gray-600 leading-relaxed">{type.desc}</CardDescription>
+                      <CardDescription className="text-gray-600 leading-relaxed">
+                        {type.desc}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <Link href="/auth/signup">
@@ -761,18 +836,18 @@ export default function HomePage() {
               {[
                 {
                   icon: Zap,
-                  title: 'Lightning Fast',
-                  desc: 'Professional legal letters in minutes, not hours',
+                  title: "Lightning Fast",
+                  desc: "Professional legal letters in minutes, not hours",
                 },
                 {
                   icon: Users,
-                  title: 'Attorney Approved',
-                  desc: 'Every letter is approved by qualified legal professionals',
+                  title: "Attorney Approved",
+                  desc: "Every letter is approved by qualified legal professionals",
                 },
                 {
                   icon: Shield,
-                  title: 'Secure & Confidential',
-                  desc: 'Bank-level encryption protects your information',
+                  title: "Secure & Confidential",
+                  desc: "Bank-level encryption protects your information",
                 },
               ].map((feature, index) => (
                 <Card
@@ -786,7 +861,9 @@ export default function HomePage() {
                     <CardTitle className="text-xl font-semibold mb-2 text-gradient-animated">
                       {feature.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600">{feature.desc}</CardDescription>
+                    <CardDescription className="text-gray-600">
+                      {feature.desc}
+                    </CardDescription>
                   </CardHeader>
                 </Card>
               ))}
@@ -801,7 +878,9 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center space-x-3 mb-4">
                   <Scale className="h-10 w-10 text-[#199df4]" />
-                  <span className="text-2xl font-bold text-white">Talk-To-My-Lawyer</span>
+                  <span className="text-2xl font-bold text-white">
+                    Talk-To-My-Lawyer
+                  </span>
                 </div>
                 <p className="text-sky-200 mb-4">
                   Professional legal assistance without the legal bill.
@@ -848,8 +927,8 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

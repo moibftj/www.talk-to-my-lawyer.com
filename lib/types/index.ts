@@ -17,7 +17,10 @@ export type {
   LetterStatus,
   SubscriptionStatus,
   UserRole,
-} from '@/lib/database.types'
+} from "@/lib/database.types";
+
+// Re-export constants from centralized location
+export { LETTER_STATUSES, USER_ROLES } from "@/lib/constants";
 
 // Re-export API types
 export type {
@@ -39,7 +42,7 @@ export type {
   ApiHandler,
   ValidationError,
   ValidationResult,
-} from './api'
+} from "./api";
 
 // Re-export letter types
 export type {
@@ -50,10 +53,10 @@ export type {
   LetterAllowance,
   AdminActionContext,
   LetterGenerationResponse,
-} from './letter.types'
+} from "./letter.types";
 
 // Re-export constants
-export { LETTER_STATUSES, USER_ROLES } from './api'
+export { LETTER_STATUSES, USER_ROLES } from "./api";
 
 // Re-export type guards
-export { isSupabaseError, isSupabaseSuccess } from './api'
+export { isSupabaseError, isSupabaseSuccess } from "./api";
