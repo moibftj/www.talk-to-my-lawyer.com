@@ -87,8 +87,8 @@ export const FORBIDDEN_PATTERNS = [
   /onerror\s*=/gi,
   /onclick\s*=/gi,
 
-  // SQL injection patterns
-  /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+  // SQL injection patterns - relaxed to allow common words in legal letters
+  // Only flagging more obvious SQL injection attempts
   /(--|\/\*|\*\/)/g,
   /(\bor\s+1\s*=\s*1\b)/gi,
   /(\band\s+1\s*=\s*1\b)/gi,

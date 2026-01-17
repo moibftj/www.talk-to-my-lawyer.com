@@ -148,8 +148,10 @@ export async function POST(request: NextRequest) {
         'Letter generated successfully by AI'
       )
 
-      // 10. Notify admins
-      await notifyAdminsNewLetter(newLetter.id, newLetter.title, sanitizedLetterType)
+      // 10. Notify admins (non-blocking for the response)
+      notifyAdminsNewLetter(newLetter.id, newLetter.title, sanitizedLetterType).catch(err => {
+        console.error('[GenerateLetter] Admin notification failed:', err)
+      })
 
       // 11. Return success response
       return successResponse<LetterGenerationResponse>({
