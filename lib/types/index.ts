@@ -20,7 +20,7 @@ export type {
 } from "@/lib/database.types";
 
 // Re-export constants from centralized location
-export { LETTER_STATUSES, USER_ROLES } from "../constants";
+export { LETTER_STATUSES, USER_ROLES } from "../constants/index";
 
 // Re-export API types
 export type {
