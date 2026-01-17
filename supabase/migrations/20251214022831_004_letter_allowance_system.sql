@@ -15,9 +15,9 @@
 
   3. Free Trial Logic
     - First letter is free (count_user_letters returns 0)
-    - Super users have unlimited letters
 */
 
+DROP FUNCTION IF EXISTS public.check_letter_allowance(UUID);
 CREATE OR REPLACE FUNCTION public.check_letter_allowance(u_id UUID)
 RETURNS TABLE(
     has_allowance BOOLEAN,
@@ -26,17 +26,9 @@ RETURNS TABLE(
     is_super BOOLEAN
 ) AS $$
 DECLARE
-    user_profile RECORD;
     active_subscription RECORD;
     remaining_count INTEGER;
 BEGIN
-    SELECT * INTO user_profile FROM public.profiles WHERE id = u_id;
-
-    IF user_profile.is_super_user = TRUE THEN
-        RETURN QUERY SELECT true, 999, 'unlimited'::TEXT, true;
-        RETURN;
-    END IF;
-
     SELECT * INTO active_subscription
     FROM public.subscriptions
     WHERE user_id = u_id
@@ -60,20 +52,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.deduct_letter_allowance(UUID);
 CREATE OR REPLACE FUNCTION public.deduct_letter_allowance(u_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
     sub_record RECORD;
-    profile_record RECORD;
 BEGIN
-    SELECT is_super_user INTO profile_record
-    FROM public.profiles
-    WHERE id = u_id;
-    
-    IF profile_record.is_super_user THEN
-        RETURN true;
-    END IF;
-
     SELECT * INTO sub_record
     FROM public.subscriptions
     WHERE user_id = u_id
@@ -99,6 +83,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.add_letter_allowances(UUID, TEXT);
 CREATE OR REPLACE FUNCTION public.add_letter_allowances(sub_id UUID, plan TEXT)
 RETURNS VOID AS $$
 DECLARE
@@ -123,6 +108,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.reset_monthly_allowances();
 CREATE OR REPLACE FUNCTION public.reset_monthly_allowances()
 RETURNS VOID AS $$
 BEGIN
@@ -145,6 +131,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.count_user_letters(UUID);
 CREATE OR REPLACE FUNCTION public.count_user_letters(u_id UUID)
 RETURNS INTEGER AS $$
 DECLARE

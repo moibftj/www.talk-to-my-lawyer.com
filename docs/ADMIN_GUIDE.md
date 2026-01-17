@@ -219,14 +219,16 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
   email TEXT NOT NULL,
   full_name TEXT,
-  role user_role DEFAULT 'subscriber',  -- 'subscriber' | 'employee' | 'admin'
-  admin_sub_role TEXT,                  -- 'super_admin' | 'attorney_admin'
+  role user_role,                       -- 'subscriber' | 'employee' | 'admin'
+  admin_sub_role admin_sub_role,        -- 'super_admin' | 'attorney_admin'
   phone TEXT,
   company_name TEXT,
+  free_trial_used BOOLEAN,
   stripe_customer_id TEXT,
-  total_letters_generated INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  total_letters_generated INTEGER,
+  is_licensed_attorney BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 ```
 

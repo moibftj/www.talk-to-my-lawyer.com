@@ -14,8 +14,12 @@
   - Attorney Admin: Access ONLY to letter review/approval workflow
 */
 
--- Create admin sub-role enum
-CREATE TYPE admin_sub_role AS ENUM ('super_admin', 'attorney_admin');
+-- Create admin sub-role enum (idempotent)
+DO $$ BEGIN
+  CREATE TYPE admin_sub_role AS ENUM ('super_admin', 'attorney_admin');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- Add admin_sub_role column to profiles table (nullable - only admin users should have this populated)
 ALTER TABLE profiles
@@ -125,13 +129,23 @@ SET admin_sub_role = 'super_admin'
 WHERE role = 'admin'::user_role
 AND admin_sub_role IS NULL;
 
--- Add check constraint: only admin users can have non-null admin_sub_role
-ALTER TABLE profiles
-ADD CONSTRAINT admin_sub_role_only_for_admins
-CHECK (
-  (role = 'admin'::user_role AND admin_sub_role IS NOT NULL) OR
-  (role != 'admin'::user_role AND admin_sub_role IS NULL)
-);
+-- Add check constraint: only admin users can have non-null admin_sub_role (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'admin_sub_role_only_for_admins'
+      AND conrelid = 'public.profiles'::regclass
+  ) THEN
+    ALTER TABLE public.profiles
+    ADD CONSTRAINT admin_sub_role_only_for_admins
+    CHECK (
+      (role = 'admin'::user_role AND admin_sub_role IS NOT NULL) OR
+      (role != 'admin'::user_role AND admin_sub_role IS NULL)
+    );
+  END IF;
+END $$;
 
 -- Grant execute on helper functions
 GRANT EXECUTE ON FUNCTION public.get_admin_sub_role TO authenticated;

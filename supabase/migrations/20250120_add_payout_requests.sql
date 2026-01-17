@@ -26,11 +26,13 @@ CREATE INDEX IF NOT EXISTS idx_payout_requests_created_at ON payout_requests(cre
 ALTER TABLE payout_requests ENABLE ROW LEVEL SECURITY;
 
 -- Employees can view their own payout requests
+DROP POLICY IF EXISTS "Employees can view own payout requests" ON payout_requests;
 CREATE POLICY "Employees can view own payout requests"
   ON payout_requests FOR SELECT
   USING (auth.uid() = employee_id);
 
 -- Employees can create payout requests
+DROP POLICY IF EXISTS "Employees can create payout requests" ON payout_requests;
 CREATE POLICY "Employees can create payout requests"
   ON payout_requests FOR INSERT
   WITH CHECK (auth.uid() = employee_id);

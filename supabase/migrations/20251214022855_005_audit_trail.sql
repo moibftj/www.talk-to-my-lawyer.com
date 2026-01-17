@@ -41,11 +41,13 @@ CREATE INDEX IF NOT EXISTS idx_audit_action ON letter_audit_trail(action);
 
 ALTER TABLE letter_audit_trail ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins view all audit logs" ON letter_audit_trail;
 CREATE POLICY "Admins view all audit logs"
     ON letter_audit_trail FOR SELECT
     TO authenticated
     USING (public.get_user_role() = 'admin');
 
+DROP POLICY IF EXISTS "Users view own letter audit" ON letter_audit_trail;
 CREATE POLICY "Users view own letter audit"
     ON letter_audit_trail FOR SELECT
     TO authenticated
@@ -55,6 +57,7 @@ CREATE POLICY "Users view own letter audit"
         )
     );
 
+DROP POLICY IF EXISTS "System can insert audit logs" ON letter_audit_trail;
 CREATE POLICY "System can insert audit logs"
     ON letter_audit_trail FOR INSERT
     TO authenticated

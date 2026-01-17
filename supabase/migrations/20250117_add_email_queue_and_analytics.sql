@@ -64,20 +64,24 @@ ALTER TABLE public.email_delivery_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for email_queue (service role only)
+DROP POLICY IF EXISTS "Service role can manage email queue" ON public.email_queue;
 CREATE POLICY "Service role can manage email queue" ON public.email_queue
   FOR ALL USING (auth.role() = 'service_role');
 
 -- RLS Policies for email_delivery_log (service role only)
+DROP POLICY IF EXISTS "Service role can manage email delivery log" ON public.email_delivery_log;
 CREATE POLICY "Service role can manage email delivery log" ON public.email_delivery_log
   FOR ALL USING (auth.role() = 'service_role');
 
 -- RLS Policies for admin_audit_log (admins can view their own actions)
+DROP POLICY IF EXISTS "Admins can view audit log" ON public.admin_audit_log;
 CREATE POLICY "Admins can view audit log" ON public.admin_audit_log
   FOR SELECT USING (
     auth.uid() = admin_id OR
     (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
   );
 
+DROP POLICY IF EXISTS "Service role can insert audit log" ON public.admin_audit_log;
 CREATE POLICY "Service role can insert audit log" ON public.admin_audit_log
   FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
