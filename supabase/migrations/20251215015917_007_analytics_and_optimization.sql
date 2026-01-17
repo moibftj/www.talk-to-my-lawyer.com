@@ -18,6 +18,7 @@
     - `pending_review_letters_view` - For admin review queue
 */
 
+DROP FUNCTION IF EXISTS public.get_admin_dashboard_stats();
 CREATE OR REPLACE FUNCTION public.get_admin_dashboard_stats()
 RETURNS TABLE(
     total_users INTEGER,
@@ -41,6 +42,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.get_letter_statistics(INTEGER);
 CREATE OR REPLACE FUNCTION public.get_letter_statistics(days_back INTEGER DEFAULT 30)
 RETURNS TABLE(
     total_letters INTEGER,
@@ -68,6 +70,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.get_subscription_analytics();
 CREATE OR REPLACE FUNCTION public.get_subscription_analytics()
 RETURNS TABLE(
     active_subscriptions INTEGER,
@@ -89,6 +92,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.get_revenue_summary(INTEGER);
 CREATE OR REPLACE FUNCTION public.get_revenue_summary(months_back INTEGER DEFAULT 12)
 RETURNS TABLE(
     month_year TEXT,
@@ -120,6 +124,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.cleanup_failed_letters(INTEGER);
 CREATE OR REPLACE FUNCTION public.cleanup_failed_letters(older_than_days INTEGER DEFAULT 30)
 RETURNS INTEGER AS $$
 DECLARE
@@ -134,6 +139,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP FUNCTION IF EXISTS public.get_user_activity_summary(UUID);
 CREATE OR REPLACE FUNCTION public.get_user_activity_summary(u_id UUID)
 RETURNS TABLE(
     total_letters INTEGER,
