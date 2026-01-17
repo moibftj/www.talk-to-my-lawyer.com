@@ -397,7 +397,16 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, "created_at" | "updated_at"> & {
+        Insert: Pick<Profile, "id" | "email"> & {
+          full_name?: string | null;
+          role?: UserRole;
+          admin_sub_role?: AdminSubRole | null;
+          phone?: string | null;
+          company_name?: string | null;
+          free_trial_used?: boolean;
+          stripe_customer_id?: string | null;
+          total_letters_generated?: number;
+          is_licensed_attorney?: boolean;
           created_at?: string;
           updated_at?: string;
         };
