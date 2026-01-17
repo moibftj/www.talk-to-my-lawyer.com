@@ -147,7 +147,8 @@ export async function POST(request: NextRequest) {
 
         if (response.ok) {
           // Mark as sent
-          await supabase.rpc("mark_email_sent", {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase as any).rpc("mark_email_sent", {
             p_email_id: email.id,
             p_provider: "resend",
             p_response_time_ms: responseTime,
@@ -165,7 +166,8 @@ export async function POST(request: NextRequest) {
           error instanceof Error ? error.message : "Unknown error";
 
         // Mark as failed (will retry based on attempts)
-        await supabase.rpc("mark_email_failed", {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).rpc("mark_email_failed", {
           p_email_id: email.id,
           p_error_message: message,
           p_provider: "resend",
@@ -224,7 +226,8 @@ export async function GET(request: NextRequest) {
   const supabase = getServiceRoleClient();
 
   // Get queue stats
-  const { data: stats } = await supabase.rpc("get_email_queue_stats");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: stats } = await (supabase as any).rpc("get_email_queue_stats");
 
   return NextResponse.json({
     status: "ok",
