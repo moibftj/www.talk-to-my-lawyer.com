@@ -18,9 +18,12 @@
 
 -- Create unique partial index to enforce single admin
 -- This ensures only one row can have role = 'admin'
-CREATE UNIQUE INDEX IF NOT EXISTS one_admin_only 
-ON public.profiles ((TRUE)) 
-WHERE role = 'admin';
+DO $$
+BEGIN
+    IF (SELECT COUNT(*) FROM public.profiles WHERE role = 'admin') <= 1 THEN
+        EXECUTE 'CREATE UNIQUE INDEX IF NOT EXISTS one_admin_only ON public.profiles ((TRUE)) WHERE role = ''admin''';
+    END IF;
+END $$;
 
 -- Function to check if an admin already exists
 CREATE OR REPLACE FUNCTION public.admin_exists()
@@ -69,11 +72,16 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 -- Drop existing trigger if it exists
 DROP TRIGGER IF EXISTS enforce_single_admin_trigger ON public.profiles;
 
--- Create trigger to enforce single admin on insert and update
-CREATE TRIGGER enforce_single_admin_trigger
-    BEFORE INSERT OR UPDATE ON public.profiles
-    FOR EACH ROW
-    EXECUTE FUNCTION public.enforce_single_admin();
+-- Create trigger to enforce single admin on insert and update (only if safe)
+DO $$
+BEGIN
+    IF (SELECT COUNT(*) FROM public.profiles WHERE role = 'admin') <= 1 THEN
+        EXECUTE 'CREATE TRIGGER enforce_single_admin_trigger
+            BEFORE INSERT OR UPDATE ON public.profiles
+            FOR EACH ROW
+            EXECUTE FUNCTION public.enforce_single_admin()';
+    END IF;
+END $$;
 
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION public.admin_exists TO authenticated;
