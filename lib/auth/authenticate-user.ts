@@ -1,76 +1,87 @@
 /**
  * Reusable authentication utility to reduce code duplication across API routes
  */
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
-import type { User } from '@supabase/supabase-js'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/api-error-handler'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import type { User } from "@supabase/supabase-js";
+import {
+  AuthenticationError,
+  AuthorizationError,
+} from "@/lib/api/api-error-handler";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface AuthenticationResult {
-  authenticated: boolean
-  user: User | null
-  errorResponse: NextResponse | null
+  authenticated: boolean;
+  user: User | null;
+  errorResponse: NextResponse | null;
 }
 
 /**
  * Authenticate user and return result
  * Replaces duplicated pattern: const { data: { user }, error: authError } = await supabase.auth.getUser()
- * 
+ *
  * @returns AuthenticationResult with user info or error response
  */
 export async function authenticateUser(): Promise<AuthenticationResult> {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
   if (authError || !user) {
     return {
       authenticated: false,
       user: null,
-      errorResponse: NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+      errorResponse: NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 },
+      ),
+    };
   }
-  
+
   return {
     authenticated: true,
     user,
-    errorResponse: null
-  }
+    errorResponse: null,
+  };
 }
 
 /**
  * Authenticate user or return error response
- * 
+ *
  * This is a convenience wrapper that either returns the authenticated user
  * or returns an error response that can be sent directly from the API route.
- * 
+ *
  * @example
  * const userOrError = await authenticateUserOrReturnError()
  * if (userOrError instanceof NextResponse) return userOrError
  * const user = userOrError
- * 
+ *
  * @returns Authenticated user or error NextResponse
  */
-export async function authenticateUserOrReturnError(): Promise<User | NextResponse> {
-  const result = await authenticateUser()
+export async function authenticateUserOrReturnError(): Promise<
+  User | NextResponse
+> {
+  const result = await authenticateUser();
 
   if (!result.authenticated || !result.user) {
-    return result.errorResponse!
+    return result.errorResponse!;
   }
 
-  return result.user
+  return result.user;
 }
 
 /**
  * Extended authentication result with Supabase client and user profile
  */
 export interface AuthContextResult {
-  user: User
-  supabase: SupabaseClient
+  user: User;
+  supabase: SupabaseClient;
   profile?: {
-    role: string
-    [key: string]: unknown
-  }
+    role: string;
+    [key: string]: unknown;
+  };
 }
 
 /**
@@ -80,14 +91,17 @@ export interface AuthContextResult {
  * @throws {AuthenticationError} if user is not authenticated
  */
 export async function requireAuth(): Promise<AuthContextResult> {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    throw new AuthenticationError()
+    throw new AuthenticationError();
   }
 
-  return { user, supabase }
+  return { user, supabase };
 }
 
 /**
@@ -97,33 +111,54 @@ export async function requireAuth(): Promise<AuthContextResult> {
  * @throws {AuthorizationError} if user doesn't have required role
  */
 export async function requireRole(role: string): Promise<AuthContextResult> {
-  const { user, supabase } = await requireAuth()
+  const { user, supabase } = await requireAuth();
 
   const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
   if (error || !profile) {
-    throw new AuthorizationError('Unable to verify user role')
+    throw new AuthorizationError("Unable to verify user role");
   }
 
   if (profile.role !== role) {
-    throw new AuthorizationError(`This action requires ${role} role`)
+    throw new AuthorizationError(`This action requires ${role} role`);
   }
 
-  return { user, supabase, profile }
+  return { user, supabase, profile };
 }
 
 /**
- * Authenticate user and verify they are a subscriber
+ * Authenticate user and verify they can generate letters
+ * Allows subscribers, admins, and super_admins
  *
  * @throws {AuthenticationError} if user is not authenticated
- * @throws {AuthorizationError} if user is not a subscriber
+ * @throws {AuthorizationError} if user role doesn't allow letter generation
  */
 export async function requireSubscriber(): Promise<AuthContextResult> {
-  return requireRole('subscriber')
+  const { user, supabase } = await requireAuth();
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile) {
+    throw new AuthorizationError("Unable to verify user role");
+  }
+
+  // Subscribers, admins, and super_admins can all generate letters
+  const allowedRoles = ["subscriber", "admin", "super_admin"];
+  if (!allowedRoles.includes(profile.role)) {
+    throw new AuthorizationError(
+      "This action requires subscriber role or higher",
+    );
+  }
+
+  return { user, supabase, profile };
 }
 
 /**
@@ -133,24 +168,24 @@ export async function requireSubscriber(): Promise<AuthContextResult> {
  * @throws {AuthorizationError} if user is not an admin
  */
 export async function requireAdmin(): Promise<AuthContextResult> {
-  const { user, supabase } = await requireAuth()
+  const { user, supabase } = await requireAuth();
 
   const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
   if (error || !profile) {
-    throw new AuthorizationError('Unable to verify admin status')
+    throw new AuthorizationError("Unable to verify admin status");
   }
 
-  const adminRoles = ['admin', 'super_admin']
+  const adminRoles = ["admin", "super_admin"];
   if (!adminRoles.includes(profile.role)) {
-    throw new AuthorizationError('This action requires admin privileges')
+    throw new AuthorizationError("This action requires admin privileges");
   }
 
-  return { user, supabase, profile }
+  return { user, supabase, profile };
 }
 
 /**
@@ -160,5 +195,5 @@ export async function requireAdmin(): Promise<AuthContextResult> {
  * @throws {AuthorizationError} if user is not an employee
  */
 export async function requireEmployee(): Promise<AuthContextResult> {
-  return requireRole('employee')
+  return requireRole("employee");
 }
