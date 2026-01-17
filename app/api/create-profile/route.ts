@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase().trim(),
         role: requestedRole,
         full_name: fullName.trim()
-      }, {
+      } as Record<string, unknown>, {
         onConflict: 'id',
         ignoreDuplicates: false
       })
