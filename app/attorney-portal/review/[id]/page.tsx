@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, User, Mail, Phone, Building, FileText, Calendar, Clock, LogOut, Scale } from 'lucide-react'
 import { format } from 'date-fns'
-import { ReviewLetterModal } from '@/components/review-letter-modal'
+import { AttorneyReviewModal } from '@/components/attorney-review-modal'
 
 export default async function AttorneyReviewLetterDetailPage({ params }: { params: { id: string } }) {
   // Verify admin authentication
@@ -103,15 +103,15 @@ export default async function AttorneyReviewLetterDetailPage({ params }: { param
         </div>
 
         {/* Review Actions */}
-        <ReviewLetterModal letter={letter} />
+        <AttorneyReviewModal letter={letter} />
       </div>
 
-      {/* Subscriber Information */}
+      {/* Subscriber Information - Masked for Attorneys */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
-            Subscriber Information
+            Client Information
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -119,8 +119,8 @@ export default async function AttorneyReviewLetterDetailPage({ params }: { param
             <div className="flex items-start gap-3">
               <User className="w-4 h-4 text-muted-foreground mt-1" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Full Name</p>
-                <p className="text-base">{letter.profiles?.full_name || 'Not provided'}</p>
+                <p className="text-sm font-medium text-muted-foreground">Client ID</p>
+                <p className="text-base font-mono text-slate-600">{letter.user_id?.slice(0, 8)}...</p>
               </div>
             </div>
 
@@ -128,29 +128,25 @@ export default async function AttorneyReviewLetterDetailPage({ params }: { param
               <Mail className="w-4 h-4 text-muted-foreground mt-1" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Email</p>
-                <p className="text-base">{letter.profiles?.email}</p>
+                <p className="text-base text-slate-600">
+                  {letter.profiles?.email ? letter.profiles.email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : 'N/A'}
+                </p>
               </div>
             </div>
 
-            {letter.profiles?.phone && (
-              <div className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-muted-foreground mt-1" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                  <p className="text-base">{letter.profiles.phone}</p>
-                </div>
+            <div className="flex items-start gap-3 md:col-span-2">
+              <Building className="w-4 h-4 text-muted-foreground mt-1" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Letter Type</p>
+                <p className="text-base capitalize">{letter.letter_type?.replace('_', ' ')}</p>
               </div>
-            )}
+            </div>
 
-            {letter.profiles?.company_name && (
-              <div className="flex items-start gap-3">
-                <Building className="w-4 h-4 text-muted-foreground mt-1" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Company</p>
-                  <p className="text-base">{letter.profiles.company_name}</p>
-                </div>
-              </div>
-            )}
+            <div className="md:col-span-2">
+              <p className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded border border-amber-200">
+                <strong>Note:</strong> Subscriber contact details are masked. System administrators can view full subscriber information.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

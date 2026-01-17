@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminRateLimit, safeApplyRateLimit } from '@/lib/rate-limit-redis'
 import {
   validateAdminAction,
+  validateLetterStatusTransition,
   handleCSRFTokenRequest,
   updateLetterStatus,
   notifyLetterOwner,
@@ -208,10 +209,14 @@ export async function handleAdminLetterAction(
     // 3. Get letter ID
     const letterId = getLetterId(params)
 
-    // 4. Parse request body
+    // 4. Validate status transition (super admin can override, attorney cannot)
+    const statusValidationError = await validateLetterStatusTransition(letterId, actionName as 'approve' | 'reject')
+    if (statusValidationError) return statusValidationError
+
+    // 5. Parse request body
     const body = await request.json()
 
-    // 5. Validate required fields for this action
+    // 6. Validate required fields for this action
     const actionConfig = letterActions[actionName]
     const { data: bodyData, error: parseError } = parseActionBody(
       body,
@@ -219,7 +224,7 @@ export async function handleAdminLetterAction(
     )
     if (parseError) return parseError
 
-    // 6. Process the action
+    // 7. Process the action
     return await processLetterAction(request, letterId, actionName, bodyData)
   } catch (error) {
     console.error(`[Admin] ${actionName} error:`, error)

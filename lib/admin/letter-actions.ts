@@ -16,6 +16,14 @@ import { queueTemplateEmail } from '@/lib/email/service'
 import type { EmailTemplate } from '@/lib/email/types'
 
 /**
+ * Check if the current admin is a super admin
+ */
+async function isSuperAdmin(): Promise<boolean> {
+  const session = await getAdminSession()
+  return session?.role === 'super_admin'
+}
+
+/**
  * Common authentication and validation for admin letter review routes
  * Accessible by both Super Admin and Attorney Admin
  * Returns null if valid, or error response if invalid
@@ -30,6 +38,53 @@ export async function validateAdminAction(request: NextRequest): Promise<NextRes
   if (!csrfResult.valid) {
     return NextResponse.json(
       { error: 'CSRF validation failed', details: csrfResult.error },
+      { status: 403 }
+    )
+  }
+
+  return null
+}
+
+/**
+ * Validate that an admin action can be performed on a letter with the given status.
+ * Super admins can override any status (including rejecting approved letters).
+ * Attorney admins cannot act on already approved/completed letters.
+ */
+export async function validateLetterStatusTransition(
+  letterId: string,
+  action: 'approve' | 'reject'
+): Promise<NextResponse | null> {
+  const supabase = await createClient()
+
+  // Get current letter status
+  const { data: letter } = await supabase
+    .from('letters')
+    .select('status')
+    .eq('id', letterId)
+    .single()
+
+  if (!letter) {
+    return NextResponse.json(
+      { error: 'Letter not found' },
+      { status: 404 }
+    )
+  }
+
+  const superAdmin = await isSuperAdmin()
+
+  // Super admin can perform any action on any letter
+  if (superAdmin) {
+    return null
+  }
+
+  // Attorney admin restrictions
+  const restrictedStatuses = ['approved', 'completed', 'failed']
+  if (restrictedStatuses.includes(letter.status)) {
+    return NextResponse.json(
+      {
+        error: `Cannot ${action} a letter that is ${letter.status}`,
+        message: 'This letter has already been finalized. Only a system administrator can modify it.'
+      },
       { status: 403 }
     )
   }

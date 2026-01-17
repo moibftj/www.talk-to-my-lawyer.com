@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, User, Mail, Phone, Building, FileText, Calendar, Clock } from 'lucide-react'
 import { format } from 'date-fns'
-import { ReviewLetterModal } from '@/components/review-letter-modal'
+import { SuperAdminReviewModal } from '@/components/super-admin-review-modal'
 
 export default async function ReviewLetterDetailPage({ params }: { params: { id: string } }) {
   // Verify admin authentication
@@ -95,7 +95,7 @@ export default async function ReviewLetterDetailPage({ params }: { params: { id:
         </div>
 
         {/* Review Actions */}
-        <ReviewLetterModal letter={letter} />
+        <SuperAdminReviewModal letter={letter} />
       </div>
 
       {/* Subscriber Information */}

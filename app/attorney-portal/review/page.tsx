@@ -154,7 +154,7 @@ export default async function AttorneyReviewPage() {
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4" />
                           <span className="truncate">
-                            {letter.profiles?.full_name || letter.profiles?.email || 'Unknown User'}
+                            Client {letter.user_id?.slice(0, 6)}...
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
