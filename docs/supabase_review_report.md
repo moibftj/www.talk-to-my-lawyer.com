@@ -1,5 +1,7 @@
 # Supabase Project & Repository Review Report
 
+Note: This report reflects a pre-consolidation audit. The repo now uses `supabase/migrations/` as the single source of truth for SQL, and `scripts/*.sql` has been retired. Use `docs/DATABASE.md` for the current schema and migration flow.
+
 This report provides a comprehensive analysis of the **Talk-To-My-Lawyer** repository and its alignment with the Supabase project **Main** (Reference: `nomiiqzxaxyxnxndvkbe`).
 
 ## 1. Executive Summary
