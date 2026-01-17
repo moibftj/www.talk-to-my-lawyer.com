@@ -10,93 +10,108 @@ Talk-To-My-Lawyer uses Supabase (PostgreSQL) with Row Level Security (RLS) for d
 
 ## Database Schema
 
+Schema reference: `lib/database.types.ts` (generated from Supabase) is the source of truth for column names and types. The snippets below are simplified sketches for orientation.
+
 ### Core Tables
 
 #### profiles
-User profiles extending Supabase Auth users
+User profiles extending Supabase Auth users.
 
 ```sql
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
   email TEXT NOT NULL,
   full_name TEXT,
-  role user_role DEFAULT 'subscriber',
-  admin_sub_role TEXT,  -- 'super_admin' | 'attorney_admin'
+  role user_role,
+  admin_sub_role admin_sub_role,
   phone TEXT,
   company_name TEXT,
+  free_trial_used BOOLEAN,
   stripe_customer_id TEXT,
-  total_letters_generated INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  total_letters_generated INTEGER,
+  is_licensed_attorney BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 ```
 
 #### subscriptions
-User subscription and letter allowances
+User subscriptions and letter allowances.
 
 ```sql
 CREATE TABLE subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  status TEXT NOT NULL,
-  plan TEXT NOT NULL DEFAULT 'single_letter',
+  plan TEXT,
   plan_type TEXT,
-  price NUMERIC(10,2) DEFAULT 299.00,
-  discount NUMERIC(10,2) DEFAULT 0.00,
+  status subscription_status,
+  price NUMERIC(10,2),
+  discount NUMERIC(10,2),
   coupon_code TEXT,
-  employee_id UUID REFERENCES profiles(id),
-  remaining_letters INTEGER DEFAULT 0,
-  credits_remaining INTEGER DEFAULT 0,
+  stripe_subscription_id TEXT,
+  stripe_customer_id TEXT,
+  stripe_session_id TEXT,
   current_period_start TIMESTAMPTZ,
   current_period_end TIMESTAMPTZ,
-  stripe_session_id TEXT,
-  stripe_customer_id TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  remaining_letters INTEGER,
+  letters_remaining INTEGER,
+  letters_per_period INTEGER,
+  credits_remaining INTEGER,
+  last_reset_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 ```
 
 #### letters
-Letter documents and workflow
+Letter documents and review workflow.
 
 ```sql
 CREATE TABLE letters (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  status TEXT NOT NULL,
+  status letter_status,
   letter_type TEXT,
-  intake_data JSONB DEFAULT '{}',
+  intake_data JSONB,
   ai_draft_content TEXT,
   final_content TEXT,
+  draft_metadata JSONB,
+  pdf_url TEXT,
   reviewed_by UUID REFERENCES profiles(id),
   reviewed_at TIMESTAMPTZ,
   review_notes TEXT,
   rejection_reason TEXT,
   approved_at TIMESTAMPTZ,
-  completed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  claimed_by UUID REFERENCES profiles(id),
+  claimed_at TIMESTAMPTZ,
+  is_attorney_reviewed BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 ```
 
 #### employee_coupons
-Employee referral coupons
+Employee referral coupons.
 
 ```sql
 CREATE TABLE employee_coupons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id UUID REFERENCES profiles(id) UNIQUE,
   code TEXT UNIQUE NOT NULL,
-  discount_percent INTEGER DEFAULT 20,
-  is_active BOOLEAN DEFAULT TRUE,
-  usage_count INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  description TEXT,
+  discount_percent INTEGER,
+  is_active BOOLEAN,
+  usage_count INTEGER,
+  max_uses INTEGER,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
 );
 ```
 
 #### commissions
-Employee commission tracking
+Employee commission tracking.
 
 ```sql
 CREATE TABLE commissions (
@@ -104,20 +119,23 @@ CREATE TABLE commissions (
   employee_id UUID REFERENCES profiles(id),
   subscription_id UUID REFERENCES subscriptions(id),
   subscription_amount NUMERIC(10,2),
-  commission_rate NUMERIC(5,4) DEFAULT 0.0500,
+  commission_rate NUMERIC(5,4),
   commission_amount NUMERIC(10,2),
-  status TEXT DEFAULT 'pending',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  status commission_status,
+  paid_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ
 );
 ```
 
-### Audit & Security Tables
+### Supporting Tables
 
-- `letter_audit_trail` - Letter change history
-- `email_queue` - Queued emails and retries
-- `admin_audit_log` - Admin authentication and activity
-- `fraud_detection_rules` - Fraud detection configuration
-- `fraud_alerts` - Suspicious activity alerts
+- **Audit & admin**: `letter_audit_trail`, `admin_audit_log`
+- **Email**: `email_queue`, `email_queue_logs`, `email_delivery_log`
+- **Coupons & usage**: `coupon_usage`, `promotional_code_usage`
+- **GDPR**: `privacy_policy_acceptances`, `data_export_requests`, `data_deletion_requests`, `data_access_logs`
+- **Security & fraud**: `security_audit_log`, `security_config`, `fraud_detection_config`, `fraud_detection_log`, `suspicious_patterns`
+- **Payouts**: `payout_requests`
+- **Webhooks & analytics**: `webhook_events`, `admin_coupon_analytics` (view)
 
 ## Database Functions
 
@@ -188,10 +206,7 @@ SELECT log_letter_audit(
 
 ### Migration Order
 
-Execute in sequence for clean setup:
-
-1. `scripts/001-023.sql` - Core schema and updates
-2. `supabase/migrations/*.sql` - Supabase CLI migrations (timestamp order)
+Execute in timestamp order from `supabase/migrations/`. The `pnpm db:migrate` script runs `scripts/run-migrations.js`, which applies all `.sql` files in `supabase/migrations/` sequentially.
 
 ### Running Migrations
 
@@ -200,20 +215,22 @@ Execute in sequence for clean setup:
 pnpm db:migrate
 
 # Or manually in Supabase SQL Editor
-# Execute each file in numeric order
+# Execute each file in timestamp order from supabase/migrations/
 ```
 
 ### Migration Files
 
+See `supabase/migrations/` for the full list. Key entries include:
+
 | Migration | Description |
 |-----------|-------------|
-| `001_setup_schema.sql` | Core tables |
-| `002_setup_indexes.sql` | Performance indexes |
-| `003_add_admin_column.sql` | Admin role column |
-| `011_remove_is_superuser.sql` | Remove single-admin constraint |
-| `012_add_multi_admin_support.sql` | Multi-admin system |
-| `014_add_credits_remaining.sql` | Credit allowance system |
-| `020_add_profile_totals.sql` | Aggregate fields |
+| `20251214022657_001_core_schema.sql` | Core tables, enums, indexes |
+| `20251214022727_002_rls_policies.sql` | Base RLS policies |
+| `20251214022758_003_database_functions.sql` | Core RPCs |
+| `20250102000000_013_admin_role_separation.sql` | Admin sub-roles and helpers |
+| `20260103000000_014_schema_alignment.sql` | Schema alignment updates |
+| `20260116000000_020_email_queue_rpc_functions.sql` | Email queue RPCs |
+| `20260116120000_021_schema_fixes.sql` | Schema fixes and enum updates |
 
 ## Database Testing
 
