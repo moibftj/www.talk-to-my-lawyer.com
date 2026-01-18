@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { ChevronDown, FileText, Scale, Clock, Mail, Shield, CreditCard, Home, Briefcase, Building, AlertCircle, Users, CheckCircle } from 'lucide-react'
+import { ChevronDown, FileText, Scale, Clock, Mail, Shield, CreditCard, AlertCircle, Users, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
@@ -9,75 +9,63 @@ import { ArrowRight } from 'lucide-react'
 const faqs = [
   {
     id: 'what-types',
-    question: 'What types of letters can I order?',
-    answer: 'We offer a comprehensive range of professional legal letters, including Cease and Desist, Breach of Contract, Demand for Payment, Pre-Litigation Settlement, Debt Collection, and more. Each letter is custom made for your specific situation.',
+    question: 'What types of letters do you provide?',
+    answer: 'Breach of Contract, Demand for Payment, Cease and Desist, Pre-Litigation Settlement, Debt Collection, and more. Each letter is custom made for your specific situation.',
     icon: FileText,
   },
   {
     id: 'who-drafts',
     question: 'Who drafts the letters?',
-    answer: 'Letters are drafted by licensed attorneys and are custom made for your specific situation. Every letter is attorney approved before delivery to ensure quality and legal accuracy.',
+    answer: 'Letters are drafted by licensed attorneys and are custom made for your specific situation.',
     icon: Scale,
+  },
+  {
+    id: 'attorney-approved',
+    question: 'Are the letters attorney approved?',
+    answer: 'Yes, every letter is attorney approved before delivery to ensure quality and legal accuracy.',
+    icon: CheckCircle,
   },
   {
     id: 'how-long',
     question: 'How long does it take?',
-    answer: 'Our standard turnaround time is up to 48 hours. You will receive your completed letter via email within this timeframe.',
+    answer: 'Up to 48 hours turnaround. You will receive your completed letter via email within this timeframe.',
     icon: Clock,
   },
   {
-    id: 'sent-by-lawyer',
-    question: 'Are letters sent by a lawyer?',
-    answer: 'Yes, letters are sent from a lawyer\'s email address on official law firm letterhead. This adds credibility and weight to your legal communication.',
-    icon: Mail,
-  },
-  {
-    id: 'subscription',
-    question: 'Is this a subscription?',
-    answer: 'We offer flexible options. You can purchase a single letter ($200) or become a member ($50 per letter). Members also have access to our Monthly Plan ($200/month) or Annual Plan ($19.99/month) for ongoing legal communication needs.',
+    id: 'pricing',
+    question: 'How much does it cost?',
+    answer: 'Single Letter: $200. With Membership: $50 per letter (Monthly: $200/month, Annual: $2,000/year for 48 letters at ≈$41.67/letter).',
     icon: CreditCard,
   },
   {
-    id: 'pricing',
-    question: 'How does pricing work?',
-    answer: 'With Membership: $50 per letter. Single Letter (No Membership): $200 per letter. Monthly Plan: $200 per month. Annual Plan: $19.99 per month (includes 48 letters per year). All letters include PDF download, delivery from a lawyer\'s email, official letterhead, professional formatting, and attorney approval.',
+    id: 'delivery',
+    question: 'How are letters delivered?',
+    answer: 'Letters are delivered via email from a lawyer\'s email address.',
+    icon: Mail,
+  },
+  {
+    id: 'pdf-download',
+    question: 'Can I download a PDF?',
+    answer: 'Yes, every letter includes a PDF download for your records.',
+    icon: FileText,
+  },
+  {
+    id: 'lawyer-email',
+    question: 'Are letters sent from a lawyer\'s email?',
+    answer: 'Yes, all letters are sent from a lawyer\'s email address on official law firm letterhead.',
     icon: Shield,
   },
   {
-    id: 'tenant-disputes',
-    question: 'Can you help with tenant/landlord disputes?',
-    answer: 'Yes, we provide legal letters for various tenant disputes including security deposit issues, lease violations, habitability problems, and eviction notices.',
-    icon: Home,
-  },
-  {
-    id: 'employment',
-    question: 'Do you handle employment-related letters?',
-    answer: 'Yes, we can help with workplace harassment, wrongful termination, wage disputes, and other HR & employment-related legal letters.',
-    icon: Briefcase,
-  },
-  {
-    id: 'property',
-    question: 'What about property and real estate issues?',
-    answer: 'We provide legal letters for property damage claims, boundary disputes, easement issues, and other real estate-related matters.',
-    icon: Building,
-  },
-  {
-    id: 'cease-desist',
-    question: 'What is a Cease and Desist letter?',
-    answer: 'A Cease and Desist letter is a formal request demanding that an individual or business stop a specific illegal or harmful activity, such as harassment, defamation, copyright infringement, or trademark violation.',
-    icon: AlertCircle,
-  },
-  {
-    id: 'debt-collection',
-    question: 'Can you help with debt collection?',
-    answer: 'Yes, we provide professional demand letters for debt collection to help you recover money owed to you by clients, customers, or businesses.',
+    id: 'membership',
+    question: 'Do I need a membership?',
+    answer: 'No. You can purchase a single letter for $200 without membership. Membership provides better pricing at $50 per letter.',
     icon: Users,
   },
   {
-    id: 'guarantee',
-    question: 'What do I get with each letter?',
-    answer: 'Every letter includes: PDF download for your records, sent from a lawyer\'s email address, on lawyer\'s letterhead, professionally formatted, attorney approved content, and up to 48 hours turnaround time.',
-    icon: CheckCircle,
+    id: 'letters-needed',
+    question: 'How many letters do disputes usually require?',
+    answer: 'Most disputes require 4-10 letters as rebuttals and counteroffers are normal parts of the dispute resolution process.',
+    icon: AlertCircle,
   },
 ]
 
@@ -88,9 +76,6 @@ const iconMap: Record<string, any> = {
   Mail,
   Shield,
   CreditCard,
-  Home,
-  Briefcase,
-  Building,
   AlertCircle,
   Users,
   CheckCircle,

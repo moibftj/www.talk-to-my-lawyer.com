@@ -14,83 +14,60 @@ const plans = [
     description:
       "Perfect for one-time legal needs. Get a professional letter without commitment.",
     price: 200,
+    unit: "one-time",
     buttonText: "Get Started",
     buttonVariant: "outline" as const,
     features: [
-      { text: "1 Professional Legal Letter", icon: <FileText size={20} /> },
-      { text: "Attorney approved", icon: <Scale size={20} /> },
-      { text: "PDF Download", icon: <CheckCheck size={20} /> },
+      { text: "PDF download", icon: <FileText size={20} /> },
+      { text: "Lawyer's letterhead", icon: <Scale size={20} /> },
+      { text: "Sent from a lawyer's email", icon: <CheckCheck size={20} /> },
     ],
     includes: [
       "Every letter includes:",
-      "Sent by lawyer's email",
-      "On lawyer's letterhead",
-      "Professionally formatted",
+      "Professional formatting",
+      "Attorney approved",
       "Up to 48 hours turnaround",
     ],
   },
   {
-    name: "With Membership",
+    name: "Membership",
     description:
-      "Best value — $50 per letter with membership.",
+      "$200/month membership, then just $50 per letter. Best value for ongoing legal needs.",
     price: 50,
     unit: "per letter",
     buttonText: "Get Started",
     buttonVariant: "default" as const,
     popular: true,
+    bestValue: true,
     features: [
-      { text: "Membership pricing", icon: <FileText size={20} /> },
-      { text: "Attorney approved", icon: <Scale size={20} /> },
-      { text: "PDF Download", icon: <CheckCheck size={20} /> },
+      { text: "PDF download", icon: <FileText size={20} /> },
+      { text: "Lawyer's letterhead", icon: <Scale size={20} /> },
+      { text: "Sent from a lawyer's email", icon: <CheckCheck size={20} /> },
     ],
     includes: [
       "Every letter includes:",
-      "Sent by lawyer's email",
-      "On lawyer's letterhead",
-      "Professionally formatted",
-      "Up to 48 hours turnaround",
-    ],
-  },
-  {
-    name: "Monthly Plan",
-    description:
-      "$200 per month for ongoing legal communication needs.",
-    price: 200,
-    unit: "per month",
-    buttonText: "Get Started",
-    buttonVariant: "outline" as const,
-    features: [
-      { text: "Monthly membership", icon: <FileText size={20} /> },
-      { text: "Attorney approved", icon: <Scale size={20} /> },
-      { text: "PDF Download", icon: <CheckCheck size={20} /> },
-    ],
-    includes: [
-      "Every letter includes:",
-      "Sent by lawyer's email",
-      "On lawyer's letterhead",
-      "Professionally formatted",
+      "Professional formatting",
+      "Attorney approved",
       "Up to 48 hours turnaround",
     ],
   },
   {
     name: "Annual Plan",
     description:
-      "$19.99 per month — includes 48 letters per year.",
-    price: 19.99,
-    unit: "per month",
+      "$2,000 one-time payment. Includes 48 letters (≈$41.67 per letter).",
+    price: 2000,
+    unit: "one-time",
     buttonText: "Get Started",
     buttonVariant: "outline" as const,
-    popular: false,
     features: [
-      { text: "48 letters per year", icon: <FileText size={20} /> },
-      { text: "Attorney approved", icon: <Scale size={20} /> },
-      { text: "PDF Download", icon: <CheckCheck size={20} /> },
+      { text: "PDF download", icon: <FileText size={20} /> },
+      { text: "Lawyer's letterhead", icon: <Scale size={20} /> },
+      { text: "Sent from a lawyer's email", icon: <CheckCheck size={20} /> },
     ],
     includes: [
       "Every letter includes:",
-      "Sent by lawyer's email",
-      "On lawyer's letterhead",
-      "Professionally formatted",
+      "Professional formatting",
+      "Attorney approved",
       "Up to 48 hours turnaround",
     ],
   },
@@ -233,7 +210,7 @@ export default function PricingSection() {
         <PricingSwitch onSwitch={togglePricingPeriod} />
       </TimelineContent>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 max-w-7xl gap-4 py-6 mx-auto relative z-10">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 max-w-5xl gap-4 py-6 mx-auto relative z-10">
         {plans.map((plan, index) => (
           <TimelineContent
             key={plan.name}
@@ -253,9 +230,12 @@ export default function PricingSection() {
                     {plan.name}
                   </h3>
                   {plan.popular && (
-                    <div className="">
-                      <span className="bg-[#199df4] text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="flex gap-1">
+                      <span className="bg-[#199df4] text-white px-2 py-1 rounded-full text-xs font-medium">
                         Popular
+                      </span>
+                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        Best Value
                       </span>
                     </div>
                   )}
